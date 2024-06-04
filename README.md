@@ -1,6 +1,6 @@
 # A Saga do Conhecimento
 
-**A Saga do Conhecimento** é um jogo educativo de plataforma 2D, inspirado em "Child of Light" e na ideia de Isekai. Desenvolvido para ensinar e engajar jogadores através de uma jornada mágica em Educalia, combinando aventura e aprendizado em um ambiente interativo e envolvente.
+**A Saga do Conhecimento** é um jogo educativo de plataforma 2D, inspirado na ideia de Isekai. Desenvolvido para ensinar e engajar jogadores através de uma jornada mágica em Educalia, combinando aventura e aprendizado em um ambiente interativo e envolvente.
 
 ## Objetivos do Projeto
 
