@@ -8,7 +8,7 @@ class Game:
         pygame.init()
         
         # Define as dimensões da tela do jogo
-        self.screen = pygame.display.set_mode((WIDTH,HEIGTH))
+        self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         
         # Define o título da janela do jogo
         pygame.display.set_caption('A Saga do Conhecimento')
