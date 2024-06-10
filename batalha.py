@@ -23,8 +23,10 @@ font = pygame.font.Font(None, 36)
 # Carregar e redimensionar imagens
 jogador_img = pygame.image.load("jogador.png").convert_alpha()
 inimigo_img = pygame.image.load("inimigo.png").convert_alpha()
+background_img = pygame.image.load("background.png").convert_alpha()
 jogador_img = pygame.transform.scale(jogador_img, (150, 150))
 inimigo_img = pygame.transform.scale(inimigo_img, (150, 150))
+background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
 
 # Função para desenhar texto na tela
 def desenhar_texto(texto, fonte, cor, superficie, x, y):
@@ -96,7 +98,7 @@ def desenhar_barra_tempo(tempo_restante, tempo_total):
 
 # Função para selecionar nível e disciplina
 def selecionar_nivel_e_disciplina():
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
     niveis = ["1° Ano", "2° Ano", "3° Ano", "4° Ano", "5° Ano", "6° Ano", "7° Ano", "8° Ano", "9° Ano"]
     retangulos_niveis = []
@@ -115,7 +117,7 @@ def selecionar_nivel_e_disciplina():
                 for i, ret in enumerate(retangulos_niveis):
                     if ret.collidepoint(evento.pos):
                         nivel_selecionado = niveis[i]
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
     disciplinas = ["Matemática", "Língua Portuguesa", "Ciências", "História", "Geografia", "Educação Física", "Inglês", "Arte"]
     retangulos_disciplinas = []
@@ -138,7 +140,7 @@ def selecionar_nivel_e_disciplina():
 
 # Função para selecionar ação
 def selecionar_acao():
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
     desenhar_personagens()
     desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
@@ -172,7 +174,7 @@ def selecionar_acao():
 # Função para apresentar pergunta
 def apresentar_pergunta(perguntas, tempo_total):
     pergunta = random.choice(perguntas)
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
     desenhar_personagens()
     desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
@@ -217,7 +219,7 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
                         opcao_selecionada = i
 
         # Atualizar cronômetro na tela
-        screen.fill(PRETO)
+        screen.blit(background_img, (0, 0))
         desenhar_barras_de_saude()
         desenhar_personagens()
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
@@ -258,7 +260,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
         dano = 0  # Implementar lógica de defesa se necessário
 
     saude_inimigo -= dano
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
     desenhar_personagens()
     desenhar_texto(f"Você causou {dano} de dano!", font, BRANCO, screen, 20, 20)
@@ -279,7 +281,7 @@ def turno_inimigo():
     global saude_jogador
     dano = random.randint(5, 15)
     saude_jogador -= dano
-    screen.fill(PRETO)
+    screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
     desenhar_personagens()
     desenhar_texto(f"O inimigo causou {dano} de dano!", font, BRANCO, screen, 20, 20)
@@ -308,7 +310,7 @@ def batalha():
         resultado = checar_fim_batalha()
         if resultado:
             batalha_ativa = False
-            screen.fill(PRETO)
+            screen.blit(background_img, (0, 0))
             desenhar_barras_de_saude()
             desenhar_personagens()
             desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
@@ -319,7 +321,7 @@ def batalha():
             resultado = checar_fim_batalha()
             if resultado:
                 batalha_ativa = False
-                screen.fill(PRETO)
+                screen.blit(background_img, (0, 0))
                 desenhar_barras_de_saude()
                 desenhar_personagens()
                 desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
