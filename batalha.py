@@ -1,6 +1,5 @@
 import pygame
 import random
-import time
 
 # Inicialização da Pygame
 pygame.init()
@@ -71,11 +70,14 @@ perguntas_por_nivel_e_disciplina = {
     # Adicione outros níveis até o 9° Ano
 }
 
-# Inicialização das saúdes e mana
+# Inicialização das variáveis globais
 saude_jogador = 100
 saude_inimigo = 100
 mana_jogador = 100
+mana_inimigo = 100
 defendendo = False
+nivel_selecionado = "1° Ano"
+disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
 
 # Função para desenhar barras de saúde e mana
 def desenhar_barras_de_saude():
@@ -94,10 +96,26 @@ def desenhar_barras_de_saude():
     pygame.draw.rect(screen, AZUL, (20, 540, 2 * mana_jogador, 20))
     desenhar_texto(f"Mana: {mana_jogador}/100", font, BRANCO, screen, 20, 510)
 
+    # Barra de mana do inimigo
+    pygame.draw.rect(screen, CINZA, (580, 540, 200, 20))
+    pygame.draw.rect(screen, AZUL, (580, 540, 2 * mana_inimigo, 20))
+    desenhar_texto(f"Mana: {mana_inimigo}/100", font, BRANCO, screen, 580, 510)
+
 # Função para desenhar personagens
-def desenhar_personagens():
-    screen.blit(jogador_img, (50, 300))
-    screen.blit(inimigo_img, (600, 300))
+def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
+    if dano_jogador:
+        jogador_img_mod = jogador_img.copy()
+        jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(jogador_img_mod, (50, 250))
+    else:
+        screen.blit(jogador_img, (50, 250))
+
+    if dano_inimigo:
+        inimigo_img_mod = inimigo_img.copy()
+        inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(inimigo_img_mod, (600, 250))
+    else:
+        screen.blit(inimigo_img, (600, 250))
 
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
@@ -106,6 +124,7 @@ def desenhar_barra_tempo(tempo_restante, tempo_total):
 
 # Função para selecionar nível e disciplina
 def selecionar_nivel_e_disciplina():
+    global nivel_selecionado, disciplinas_selecionadas
     screen.blit(background_img, (0, 0))
     desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
     niveis = ["1° Ano", "2° Ano", "3° Ano", "4° Ano", "5° Ano", "6° Ano", "7° Ano", "8° Ano", "9° Ano"]
@@ -132,19 +151,23 @@ def selecionar_nivel_e_disciplina():
     for i, disciplina in enumerate(disciplinas):
         retangulo = desenhar_texto(f"{i+1}. {disciplina}", font, BRANCO, screen, 20, 60 + i * 40)
         retangulos_disciplinas.append(retangulo)
+    ret_voltar = desenhar_texto("Voltar ao Início", font, BRANCO, screen, WIDTH - 200, HEIGHT - 50)
     pygame.display.flip()
 
-    disciplina_selecionada = None
-    while disciplina_selecionada is None:
+    disciplinas_selecionadas = []
+    while not disciplinas_selecionadas:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_voltar.collidepoint(evento.pos):
+                    tela_inicial()
+                    return
                 for i, ret in enumerate(retangulos_disciplinas):
                     if ret.collidepoint(evento.pos):
-                        disciplina_selecionada = disciplinas[i]
-    return nivel_selecionado, disciplina_selecionada
+                        disciplinas_selecionadas.append(disciplinas[i])
+    return nivel_selecionado, disciplinas_selecionadas
 
 # Função para selecionar ação
 def selecionar_acao():
@@ -155,6 +178,7 @@ def selecionar_acao():
     ret_ataque = desenhar_texto("Pressione 1 para Ataque", font, BRANCO, screen, 20, 60)
     ret_magia = desenhar_texto("Pressione 2 para Magia", font, BRANCO, screen, 20, 100)
     ret_defesa = desenhar_texto("Pressione 3 para Defesa", font, BRANCO, screen, 20, 140)
+    ret_fugir = desenhar_texto("Pressione 4 para Fugir", font, BRANCO, screen, 20, 180)
     pygame.display.flip()
 
     acao_selecionada = None
@@ -170,6 +194,8 @@ def selecionar_acao():
                     acao_selecionada = "Magia"
                 elif evento.key == pygame.K_3:
                     acao_selecionada = "Defesa"
+                elif evento.key == pygame.K_4:
+                    acao_selecionada = "Fugir"
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 if ret_ataque.collidepoint(evento.pos):
                     acao_selecionada = "Ataque"
@@ -177,6 +203,8 @@ def selecionar_acao():
                     acao_selecionada = "Magia"
                 elif ret_defesa.collidepoint(evento.pos):
                     acao_selecionada = "Defesa"
+                elif ret_fugir.collidepoint(evento.pos):
+                    acao_selecionada = "Fugir"
     return acao_selecionada
 
 # Função para apresentar pergunta
@@ -247,60 +275,76 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
 
 # Função para executar ação
 def executar_acao(acao, resposta_correta, tempo_resposta):
-    global saude_inimigo, defendendo, mana_jogador
+    global saude_inimigo, defendendo, mana_jogador, batalha_ativa
     dano = 0
     mensagem = ""
+    dano_inimigo = False
     
-    if resposta_correta:
-        if acao == "Ataque":
-            if tempo_resposta <= 5:
-                dano = 20
-            else:
-                dano = 10
-        elif acao == "Magia":
-            if mana_jogador >= 10:
-                mana_jogador -= 10
-                if tempo_resposta <= 5:
-                    dano = 25
-                else:
-                    dano = 15
-            else:
-                mensagem = "Mana insuficiente!"
-        elif acao == "Defesa":
-            defendendo = True
-            mensagem = "Você se preparou para a defesa!"
+    if acao == "Fugir":
+        batalha_ativa = False
+        mensagem = "Você fugiu da batalha!"
     else:
-        if acao == "Defesa":
-            defendendo = False
-            mensagem = "A defesa falhou!"
+        if resposta_correta:
+            if acao == "Ataque":
+                if tempo_resposta <= 5:
+                    dano = 20
+                else:
+                    dano = 10
+            elif acao == "Magia":
+                if mana_jogador >= 10:
+                    mana_jogador -= 10
+                    if tempo_resposta <= 5:
+                        dano = 25
+                    else:
+                        dano = 15
+                else:
+                    mensagem = "Mana insuficiente!"
+            elif acao == "Defesa":
+                defendendo = True
+                mensagem = "Você se preparou para a defesa!"
         else:
-            mensagem = "Resposta errada! Nenhum dano causado!"
+            if acao == "Defesa":
+                defendendo = False
+                mensagem = "A defesa falhou!"
+            else:
+                mensagem = "Resposta errada! Nenhum dano causado!"
 
-    saude_inimigo -= dano
+        saude_inimigo -= dano
+        mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
+        dano_inimigo = True if dano > 0 else False
+
     screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
-    desenhar_personagens()
-    desenhar_texto(f"Você causou {dano} de dano!", font, BRANCO, screen, 20, 20)
+    desenhar_personagens(dano_inimigo=dano_inimigo)
+    desenhar_texto(mensagem, font, BRANCO, screen, 20, 20)
     desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", font, BRANCO, screen, 20, 60)
-    desenhar_texto(mensagem, font, BRANCO, screen, 20, 100)
     pygame.display.flip()
     pygame.time.delay(3000)
 
 # Função para turno do inimigo
 def turno_inimigo():
-    global saude_jogador, defendendo
+    global saude_jogador, defendendo, mana_inimigo
     dano = random.randint(5, 15)
+    tipo_acao = random.choice(["Ataque", "Magia"])
+    dano_jogador = False
+
+    if tipo_acao == "Magia" and mana_inimigo >= 10:
+        mana_inimigo -= 10
+        dano += 5  # Magia causa mais dano
+
     if defendendo:
         dano //= 2  # Reduzir dano pela metade se o jogador estiver defendendo
         defendendo = False  # Resetar estado de defesa após reduzir dano
         mensagem = "Defesa bem-sucedida! Dano reduzido!"
     else:
         mensagem = ""
-    
+
     saude_jogador -= dano
+    dano_jogador = True if dano > 0 else False
+
     screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
-    desenhar_personagens()
+    desenhar_personagens(dano_jogador=dano_jogador)
     desenhar_texto(f"O inimigo causou {dano} de dano!", font, BRANCO, screen, 20, 20)
     desenhar_texto(mensagem, font, BRANCO, screen, 20, 60)
     pygame.display.flip()
@@ -314,14 +358,55 @@ def checar_fim_batalha():
         return "Vitória"
     return None
 
+# Função para exibir a tela inicial
+def tela_inicial():
+    screen.blit(background_img, (0, 0))
+    desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
+    ret_jogar = desenhar_texto("Jogar", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
+    ret_opcoes = desenhar_texto("Opções", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 50)
+    pygame.display.flip()
+
+    jogando = False
+    while not jogando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_jogar.collidepoint(evento.pos):
+                    jogando = True
+                elif ret_opcoes.collidepoint(evento.pos):
+                    selecionar_nivel_e_disciplina()
+                    jogando = True
+
 # Função principal da batalha
 def batalha():
-    nivel, disciplina = selecionar_nivel_e_disciplina()
-    perguntas = perguntas_por_nivel_e_disciplina[nivel][disciplina]
+    global nivel_selecionado, disciplinas_selecionadas, batalha_ativa
+    tela_inicial()
+
+    # Usar o primeiro ano e todas as disciplinas por padrão, se não forem selecionados
+    if not nivel_selecionado:
+        nivel_selecionado = "1° Ano"
+    if not disciplinas_selecionadas:
+        disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+
+    perguntas = []
+    for disciplina in disciplinas_selecionadas:
+        perguntas.extend(perguntas_por_nivel_e_disciplina[nivel_selecionado][disciplina])
+
+    screen.blit(background_img, (0, 0))
+    desenhar_texto(f"Nível: {nivel_selecionado}", font, BRANCO, screen, 20, 20)
+    desenhar_texto(f"Disciplinas: {', '.join(disciplinas_selecionadas)}", font, BRANCO, screen, 20, 60)
+    pygame.display.flip()
+    pygame.time.delay(2000)
+
     batalha_ativa = True
     tempo_total_pergunta = 10  # Tempo total para responder a pergunta em segundos
     while batalha_ativa:
         acao = selecionar_acao()
+        if acao == "Fugir":
+            executar_acao(acao, False, 0)
+            break
         pergunta, opcoes_rects = apresentar_pergunta(perguntas, tempo_total_pergunta)
         resposta_correta, tempo_resposta = avaliar_resposta(pergunta, opcoes_rects, tempo_total_pergunta)
         executar_acao(acao, resposta_correta, tempo_resposta)
