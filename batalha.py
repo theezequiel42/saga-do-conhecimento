@@ -16,6 +16,7 @@ PRETO = (0, 0, 0)
 VERDE = (0, 255, 0)
 VERMELHO = (255, 0, 0)
 AZUL = (0, 0, 255)
+CINZA = (169, 169, 169)
 
 # Fonte
 font = pygame.font.Font(None, 36)
@@ -70,21 +71,28 @@ perguntas_por_nivel_e_disciplina = {
     # Adicione outros níveis até o 9° Ano
 }
 
-# Inicialização das saúdes
+# Inicialização das saúdes e mana
 saude_jogador = 100
 saude_inimigo = 100
+mana_jogador = 100
+defendendo = False
 
-# Função para desenhar barras de saúde
+# Função para desenhar barras de saúde e mana
 def desenhar_barras_de_saude():
     # Barra de saúde do jogador
-    pygame.draw.rect(screen, VERMELHO, (20, 500, 200, 20))
-    pygame.draw.rect(screen, VERDE, (20, 500, 2 * saude_jogador, 20))
-    desenhar_texto(f"Jogador: {saude_jogador}/100", font, BRANCO, screen, 20, 470)
+    pygame.draw.rect(screen, VERMELHO, (20, 460, 200, 20))
+    pygame.draw.rect(screen, VERDE, (20, 460, 2 * saude_jogador, 20))
+    desenhar_texto(f"Jogador: {saude_jogador}/100", font, BRANCO, screen, 20, 430)
 
     # Barra de saúde do inimigo
-    pygame.draw.rect(screen, VERMELHO, (580, 500, 200, 20))
-    pygame.draw.rect(screen, VERDE, (580, 500, 2 * saude_inimigo, 20))
-    desenhar_texto(f"Inimigo: {saude_inimigo}/100", font, BRANCO, screen, 580, 470)
+    pygame.draw.rect(screen, VERMELHO, (580, 460, 200, 20))
+    pygame.draw.rect(screen, VERDE, (580, 460, 2 * saude_inimigo, 20))
+    desenhar_texto(f"Inimigo: {saude_inimigo}/100", font, BRANCO, screen, 580, 430)
+
+    # Barra de mana do jogador
+    pygame.draw.rect(screen, CINZA, (20, 540, 200, 20))
+    pygame.draw.rect(screen, AZUL, (20, 540, 2 * mana_jogador, 20))
+    desenhar_texto(f"Mana: {mana_jogador}/100", font, BRANCO, screen, 20, 510)
 
 # Função para desenhar personagens
 def desenhar_personagens():
@@ -239,25 +247,34 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
 
 # Função para executar ação
 def executar_acao(acao, resposta_correta, tempo_resposta):
-    global saude_inimigo
-    if acao == "Ataque":
-        if resposta_correta:
+    global saude_inimigo, defendendo, mana_jogador
+    dano = 0
+    mensagem = ""
+    
+    if resposta_correta:
+        if acao == "Ataque":
             if tempo_resposta <= 5:
                 dano = 20
             else:
                 dano = 10
-        else:
-            dano = 5
-    elif acao == "Magia":
-        if resposta_correta:
-            if tempo_resposta <= 5:
-                dano = 25
+        elif acao == "Magia":
+            if mana_jogador >= 10:
+                mana_jogador -= 10
+                if tempo_resposta <= 5:
+                    dano = 25
+                else:
+                    dano = 15
             else:
-                dano = 15
+                mensagem = "Mana insuficiente!"
+        elif acao == "Defesa":
+            defendendo = True
+            mensagem = "Você se preparou para a defesa!"
+    else:
+        if acao == "Defesa":
+            defendendo = False
+            mensagem = "A defesa falhou!"
         else:
-            dano = 10
-    elif acao == "Defesa":
-        dano = 0  # Implementar lógica de defesa se necessário
+            mensagem = "Resposta errada! Nenhum dano causado!"
 
     saude_inimigo -= dano
     screen.blit(background_img, (0, 0))
@@ -265,26 +282,27 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
     desenhar_personagens()
     desenhar_texto(f"Você causou {dano} de dano!", font, BRANCO, screen, 20, 20)
     desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", font, BRANCO, screen, 20, 60)
-    if resposta_correta:
-        if tempo_resposta <= 5:
-            mensagem = "Resposta rápida! Dano máximo!"
-        else:
-            mensagem = "Resposta correta! Dano médio!"
-    else:
-        mensagem = "Resposta errada! Dano mínimo!"
     desenhar_texto(mensagem, font, BRANCO, screen, 20, 100)
     pygame.display.flip()
     pygame.time.delay(3000)
 
 # Função para turno do inimigo
 def turno_inimigo():
-    global saude_jogador
+    global saude_jogador, defendendo
     dano = random.randint(5, 15)
+    if defendendo:
+        dano //= 2  # Reduzir dano pela metade se o jogador estiver defendendo
+        defendendo = False  # Resetar estado de defesa após reduzir dano
+        mensagem = "Defesa bem-sucedida! Dano reduzido!"
+    else:
+        mensagem = ""
+    
     saude_jogador -= dano
     screen.blit(background_img, (0, 0))
     desenhar_barras_de_saude()
     desenhar_personagens()
     desenhar_texto(f"O inimigo causou {dano} de dano!", font, BRANCO, screen, 20, 20)
+    desenhar_texto(mensagem, font, BRANCO, screen, 20, 60)
     pygame.display.flip()
     pygame.time.delay(2000)
 
