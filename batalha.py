@@ -104,16 +104,28 @@ def desenhar_barras_de_saude():
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
     if dano_jogador:
-        jogador_img_mod = jogador_img.copy()
-        jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        screen.blit(jogador_img_mod, (50, 250))
+        for _ in range(3):  # Piscar 3 vezes
+            screen.blit(jogador_img, (50, 250))
+            pygame.display.flip()
+            pygame.time.delay(100)
+            jogador_img_mod = jogador_img.copy()
+            jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            screen.blit(jogador_img_mod, (50, 250))
+            pygame.display.flip()
+            pygame.time.delay(100)
     else:
         screen.blit(jogador_img, (50, 250))
 
     if dano_inimigo:
-        inimigo_img_mod = inimigo_img.copy()
-        inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        screen.blit(inimigo_img_mod, (600, 250))
+        for _ in range(3):  # Piscar 3 vezes
+            screen.blit(inimigo_img, (600, 250))
+            pygame.display.flip()
+            pygame.time.delay(100)
+            inimigo_img_mod = inimigo_img.copy()
+            inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            screen.blit(inimigo_img_mod, (600, 250))
+            pygame.display.flip()
+            pygame.time.delay(100)
     else:
         screen.blit(inimigo_img, (600, 250))
 
@@ -279,7 +291,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
     dano = 0
     mensagem = ""
     dano_inimigo = False
-    
+
     if acao == "Fugir":
         batalha_ativa = False
         mensagem = "Você fugiu da batalha!"
