@@ -35,6 +35,7 @@ def desenhar_texto(texto, fonte, cor, superficie, x, y):
     superficie.blit(objeto_texto, retangulo_texto)
     return retangulo_texto  # Retornar o retângulo para detecção de clique
 
+# Perguntas organizadas por nível e disciplina
 perguntas_por_nivel_e_disciplina = {
     "1° Ano": {
         "Matemática": [
@@ -61,180 +62,13 @@ perguntas_por_nivel_e_disciplina = {
             {"pergunta": "Qual é a letra inicial da palavra 'iguana'?", "opcoes": ["I", "B", "G", "D"], "resposta": 0},
             {"pergunta": "Qual é a letra inicial da palavra 'jacaré'?", "opcoes": ["J", "B", "G", "D"], "resposta": 0},
         ],
-        "História": [
-            {"pergunta": "Quem foi o primeiro presidente do Brasil?", "opcoes": ["Getúlio Vargas", "Juscelino Kubitschek", "Deodoro da Fonseca", "Lula"], "resposta": 2},
-            {"pergunta": "Qual é a capital do Brasil?", "opcoes": ["Rio de Janeiro", "Brasília", "São Paulo", "Salvador"], "resposta": 1},
-            {"pergunta": "Qual é o nome do descobridor do Brasil?", "opcoes": ["Pedro Álvares Cabral", "Cristóvão Colombo", "Vasco da Gama", "Fernão de Magalhães"], "resposta": 0},
-            {"pergunta": "Qual é a data da independência do Brasil?", "opcoes": ["7 de Setembro", "15 de Novembro", "12 de Outubro", "22 de Abril"], "resposta": 0},
-            {"pergunta": "Quem foi o primeiro imperador do Brasil?", "opcoes": ["D. Pedro I", "D. Pedro II", "Joaquim Nabuco", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Qual foi a primeira capital do Brasil?", "opcoes": ["Rio de Janeiro", "São Paulo", "Salvador", "Brasília"], "resposta": 2},
-            {"pergunta": "Quem proclamou a independência do Brasil?", "opcoes": ["D. Pedro I", "D. Pedro II", "José Bonifácio", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Quem foi o líder da Inconfidência Mineira?", "opcoes": ["Tiradentes", "D. Pedro I", "José Bonifácio", "D. Pedro II"], "resposta": 0},
-            {"pergunta": "Qual foi a capital do Brasil antes de Brasília?", "opcoes": ["Rio de Janeiro", "São Paulo", "Salvador", "Porto Alegre"], "resposta": 0},
-            {"pergunta": "Quem foi o líder do movimento dos Bandeirantes?", "opcoes": ["Anhanguera", "Bento Gonçalves", "Aleijadinho", "Tiradentes"], "resposta": 0},
-        ],
-        "Geografia": [
-            {"pergunta": "Qual é o maior país da América do Sul?", "opcoes": ["Argentina", "Brasil", "Chile", "Peru"], "resposta": 1},
-            {"pergunta": "Qual é o menor país da América do Sul?", "opcoes": ["Suriname", "Guiana", "Uruguai", "Equador"], "resposta": 2},
-            {"pergunta": "Qual é a capital da Argentina?", "opcoes": ["Lima", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 1},
-            {"pergunta": "Qual é a capital do Chile?", "opcoes": ["Lima", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 2},
-            {"pergunta": "Qual é a capital do Peru?", "opcoes": ["Lima", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 0},
-            {"pergunta": "Qual é a capital da Colômbia?", "opcoes": ["Lima", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 3},
-            {"pergunta": "Qual é a capital do Uruguai?", "opcoes": ["Lima", "Buenos Aires", "Montevidéu", "Bogotá"], "resposta": 2},
-            {"pergunta": "Qual é a capital da Venezuela?", "opcoes": ["Caracas", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 0},
-            {"pergunta": "Qual é a capital do Equador?", "opcoes": ["Lima", "Quito", "Santiago", "Bogotá"], "resposta": 1},
-            {"pergunta": "Qual é a capital da Bolívia?", "opcoes": ["La Paz", "Buenos Aires", "Santiago", "Bogotá"], "resposta": 0},
-        ],
-        "Ciências": [
-            {"pergunta": "O que os seres vivos precisam para viver?", "opcoes": ["Água", "Ar", "Alimento", "Todas as opções"], "resposta": 3},
-            {"pergunta": "Qual destes é um animal?", "opcoes": ["Pedra", "Árvore", "Cachorro", "Rio"], "resposta": 2},
-            {"pergunta": "Qual é a principal fonte de energia para a Terra?", "opcoes": ["Lua", "Estrelas", "Sol", "Vento"], "resposta": 2},
-            {"pergunta": "Qual é o estado físico da água a 0 graus Celsius?", "opcoes": ["Líquido", "Sólido", "Gasoso", "Plasma"], "resposta": 1},
-            {"pergunta": "O que as plantas precisam para realizar a fotossíntese?", "opcoes": ["Água e Luz Solar", "Oxigênio", "Nitrogênio", "Sal"], "resposta": 0},
-            {"pergunta": "Qual destes é um mamífero?", "opcoes": ["Sapo", "Galinha", "Cachorro", "Peixe"], "resposta": 2},
-            {"pergunta": "Qual é a função das raízes nas plantas?", "opcoes": ["Absorver água e nutrientes", "Produzir frutos", "Realizar fotossíntese", "Proteger contra herbívoros"], "resposta": 0},
-            {"pergunta": "Qual é o órgão responsável pela respiração?", "opcoes": ["Coração", "Estômago", "Pulmões", "Fígado"], "resposta": 2},
-            {"pergunta": "Qual é o principal gás que respiramos?", "opcoes": ["Hidrogênio", "Oxigênio", "Nitrogênio", "Gás Carbônico"], "resposta": 1},
-            {"pergunta": "Qual é a camada da Terra onde vivemos?", "opcoes": ["Crosta", "Manto", "Núcleo", "Litosfera"], "resposta": 0},
-        ],
-        "Arte": [
-            {"pergunta": "Qual é a cor do céu em um dia claro?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 1},
-            {"pergunta": "Quantas cores tem o arco-íris?", "opcoes": ["5", "6", "7", "8"], "resposta": 2},
-            {"pergunta": "Qual é a cor das folhas das árvores?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 0},
-            {"pergunta": "Qual é a cor do sangue?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 2},
-            {"pergunta": "Qual é a cor das zebras?", "opcoes": ["Brancas com listras pretas", "Pretas com listras brancas", "Laranjas com listras azuis", "Rosas com listras verdes"], "resposta": 0},
-            {"pergunta": "Qual é a cor das bananas maduras?", "opcoes": ["Verde", "Azul", "Amarela", "Vermelha"], "resposta": 2},
-            {"pergunta": "Qual é a cor das cenouras?", "opcoes": ["Verde", "Laranja", "Vermelho", "Amarelo"], "resposta": 1},
-            {"pergunta": "Quantos lados tem um triângulo?", "opcoes": ["2", "3", "4", "5"], "resposta": 1},
-            {"pergunta": "Quantos lados tem um quadrado?", "opcoes": ["2", "3", "4", "5"], "resposta": 2},
-            {"pergunta": "Qual é a cor do tomate maduro?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 2},
-        ],
-        "Inglês": [
-            {"pergunta": "Como se diz 'Olá' em inglês?", "opcoes": ["Hi", "Hello", "Bye", "Thanks"], "resposta": 0},
-            {"pergunta": "Como se diz 'Obrigado' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 2},
-            {"pergunta": "Como se diz 'Tchau' em inglês?", "opcoes": ["Hi", "Hello", "Bye", "Thanks"], "resposta": 2},
-            {"pergunta": "Como se diz 'Por favor' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 0},
-            {"pergunta": "Como se diz 'Sim' em inglês?", "opcoes": ["No", "Yes", "Maybe", "Ok"], "resposta": 1},
-            {"pergunta": "Como se diz 'Não' em inglês?", "opcoes": ["No", "Yes", "Maybe", "Ok"], "resposta": 0},
-            {"pergunta": "Como se diz 'Desculpe' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 1},
-            {"pergunta": "Como se diz 'Bom dia' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 0},
-            {"pergunta": "Como se diz 'Boa noite' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 1},
-            {"pergunta": "Como se diz 'Boa tarde' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 2},
-        ],
-        "Computação": [
-            {"pergunta": "O que é um computador?", "opcoes": ["Animal", "Máquina", "Vegetal", "Mineral"], "resposta": 1},
-            {"pergunta": "Qual destes é um componente de computador?", "opcoes": ["Mouse", "Livro", "Mesa", "Caneta"], "resposta": 0},
-            {"pergunta": "O que usamos para digitar no computador?", "opcoes": ["Mouse", "Teclado", "Monitor", "Impressora"], "resposta": 1},
-            {"pergunta": "Qual é a função do monitor?", "opcoes": ["Entrada de dados", "Saída de dados", "Processamento de dados", "Armazenamento de dados"], "resposta": 1},
-            {"pergunta": "O que é um software?", "opcoes": ["Parte física do computador", "Programa de computador", "Dispositivo de entrada", "Dispositivo de saída"], "resposta": 1},
-            {"pergunta": "Qual destes é um exemplo de software?", "opcoes": ["Mouse", "Teclado", "Windows", "Impressora"], "resposta": 2},
-            {"pergunta": "Para que serve o mouse?", "opcoes": ["Digitar textos", "Mover o cursor", "Armazenar dados", "Imprimir documentos"], "resposta": 1},
-            {"pergunta": "O que é um arquivo?", "opcoes": ["Parte física do computador", "Programa de computador", "Um documento ou dado armazenado", "Dispositivo de entrada"], "resposta": 2},
-            {"pergunta": "Qual é a função da impressora?", "opcoes": ["Entrada de dados", "Saída de dados", "Processamento de dados", "Armazenamento de dados"], "resposta": 1},
-            {"pergunta": "O que é um navegador de internet?", "opcoes": ["Programa para acessar sites", "Dispositivo de entrada", "Parte física do computador", "Dispositivo de saída"], "resposta": 0},
-        ],
+        # Adicione outras disciplinas
     },
     "2° Ano": {
-        "Matemática": [
-            {"pergunta": "Quanto é 5 + 3?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 4 + 6?", "opcoes": ["9", "10", "11", "12"], "resposta": 1},
-            {"pergunta": "Quanto é 7 - 4?", "opcoes": ["3", "4", "5", "6"], "resposta": 0},
-            {"pergunta": "Quanto é 8 - 2?", "opcoes": ["5", "6", "7", "8"], "resposta": 1},
-            {"pergunta": "Quanto é 3 + 5?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 10 - 3?", "opcoes": ["6", "7", "8", "9"], "resposta": 1},
-            {"pergunta": "Quanto é 6 + 2?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 9 - 1?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 4 + 5?", "opcoes": ["7", "8", "9", "10"], "resposta": 2},
-            {"pergunta": "Quanto é 10 - 2?", "opcoes": ["7", "8", "9", "10"], "resposta": 2},
-        ],
-        "Língua Portuguesa": [
-            {"pergunta": "Qual é a letra inicial da palavra 'elefante'?", "opcoes": ["E", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'foca'?", "opcoes": ["A", "F", "G", "D"], "resposta": 1},
-            {"pergunta": "Qual é a letra inicial da palavra 'girafa'?", "opcoes": ["A", "B", "G", "D"], "resposta": 2},
-            {"pergunta": "Qual é a letra inicial da palavra 'hipopótamo'?", "opcoes": ["H", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'iguana'?", "opcoes": ["I", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'jacaré'?", "opcoes": ["J", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'kiwi'?", "opcoes": ["K", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'leão'?", "opcoes": ["L", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'macaco'?", "opcoes": ["M", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'navio'?", "opcoes": ["N", "B", "G", "D"], "resposta": 0},
-        ],
-        "História": [
-            {"pergunta": "Quem descobriu o Brasil?", "opcoes": ["Pedro Álvares Cabral", "Cristóvão Colombo", "Vasco da Gama", "Fernão de Magalhães"], "resposta": 0},
-            {"pergunta": "Qual é o nome da primeira capital do Brasil?", "opcoes": ["Rio de Janeiro", "São Paulo", "Salvador", "Brasília"], "resposta": 2},
-            {"pergunta": "Quem proclamou a independência do Brasil?", "opcoes": ["D. Pedro I", "D. Pedro II", "José Bonifácio", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Quem foi o líder da Inconfidência Mineira?", "opcoes": ["Tiradentes", "D. Pedro I", "José Bonifácio", "D. Pedro II"], "resposta": 0},
-            {"pergunta": "Quem foi o primeiro imperador do Brasil?", "opcoes": ["D. Pedro I", "D. Pedro II", "Joaquim Nabuco", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Qual foi a primeira capital do Brasil?", "opcoes": ["Rio de Janeiro", "São Paulo", "Salvador", "Brasília"], "resposta": 2},
-            {"pergunta": "Quem foi o líder do movimento dos Bandeirantes?", "opcoes": ["Anhanguera", "Bento Gonçalves", "Aleijadinho", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Qual foi a capital do Brasil antes de Brasília?", "opcoes": ["Rio de Janeiro", "São Paulo", "Salvador", "Porto Alegre"], "resposta": 0},
-            {"pergunta": "Quem foi o líder do movimento dos Bandeirantes?", "opcoes": ["Anhanguera", "Bento Gonçalves", "Aleijadinho", "Tiradentes"], "resposta": 0},
-            {"pergunta": "Qual é o nome da primeira constituição do Brasil?", "opcoes": ["Constituição de 1824", "Constituição de 1891", "Constituição de 1934", "Constituição de 1988"], "resposta": 0},
-        ],
-        "Geografia": [
-            {"pergunta": "Qual é o maior oceano do mundo?", "opcoes": ["Atlântico", "Pacífico", "Índico", "Ártico"], "resposta": 1},
-            {"pergunta": "Qual é o continente onde fica o Brasil?", "opcoes": ["Ásia", "Europa", "África", "América do Sul"], "resposta": 3},
-            {"pergunta": "Qual é o maior país do mundo?", "opcoes": ["Canadá", "China", "Estados Unidos", "Rússia"], "resposta": 3},
-            {"pergunta": "Qual é o menor país do mundo?", "opcoes": ["Mônaco", "Vaticano", "San Marino", "Liechtenstein"], "resposta": 1},
-            {"pergunta": "Qual é o maior deserto do mundo?", "opcoes": ["Saara", "Gobi", "Kalahari", "Atacama"], "resposta": 0},
-            {"pergunta": "Qual é a maior floresta tropical do mundo?", "opcoes": ["Floresta Amazônica", "Floresta do Congo", "Floresta de Bornéu", "Floresta de Sumatra"], "resposta": 0},
-            {"pergunta": "Qual é a maior cadeia de montanhas do mundo?", "opcoes": ["Himalaias", "Andes", "Rockies", "Alpes"], "resposta": 0},
-            {"pergunta": "Qual é o rio mais longo do mundo?", "opcoes": ["Amazonas", "Nilo", "Yangtzé", "Mississippi"], "resposta": 1},
-            {"pergunta": "Qual é a maior ilha do mundo?", "opcoes": ["Groenlândia", "Nova Guiné", "Bornéu", "Madagáscar"], "resposta": 0},
-            {"pergunta": "Qual é o maior lago do mundo?", "opcoes": ["Lago Superior", "Lago Vitória", "Mar Cáspio", "Lago Baikal"], "resposta": 2},
-        ],
-        "Ciências": [
-            {"pergunta": "Qual é o estado físico da água?", "opcoes": ["Sólido", "Líquido", "Gasoso", "Todos"], "resposta": 3},
-            {"pergunta": "Qual destes é uma fruta?", "opcoes": ["Batata", "Tomate", "Cenoura", "Alface"], "resposta": 1},
-            {"pergunta": "Qual é a principal fonte de energia para a Terra?", "opcoes": ["Lua", "Estrelas", "Sol", "Vento"], "resposta": 2},
-            {"pergunta": "Qual é o estado físico da água a 0 graus Celsius?", "opcoes": ["Líquido", "Sólido", "Gasoso", "Plasma"], "resposta": 1},
-            {"pergunta": "O que as plantas precisam para realizar a fotossíntese?", "opcoes": ["Água e Luz Solar", "Oxigênio", "Nitrogênio", "Sal"], "resposta": 0},
-            {"pergunta": "Qual destes é um mamífero?", "opcoes": ["Sapo", "Galinha", "Cachorro", "Peixe"], "resposta": 2},
-            {"pergunta": "Qual é a função das raízes nas plantas?", "opcoes": ["Absorver água e nutrientes", "Produzir frutos", "Realizar fotossíntese", "Proteger contra herbívoros"], "resposta": 0},
-            {"pergunta": "Qual é o órgão responsável pela respiração?", "opcoes": ["Coração", "Estômago", "Pulmões", "Fígado"], "resposta": 2},
-            {"pergunta": "Qual é o principal gás que respiramos?", "opcoes": ["Hidrogênio", "Oxigênio", "Nitrogênio", "Gás Carbônico"], "resposta": 1},
-            {"pergunta": "Qual é a camada da Terra onde vivemos?", "opcoes": ["Crosta", "Manto", "Núcleo", "Litosfera"], "resposta": 0},
-        ],
-        "Arte": [
-            {"pergunta": "Qual é a cor do sol?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 3},
-            {"pergunta": "Qual é a cor da grama?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 0},
-            {"pergunta": "Qual é a cor do céu?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 1},
-            {"pergunta": "Qual é a cor do sangue?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 2},
-            {"pergunta": "Qual é a cor das zebras?", "opcoes": ["Brancas com listras pretas", "Pretas com listras brancas", "Laranjas com listras azuis", "Rosas com listras verdes"], "resposta": 0},
-            {"pergunta": "Qual é a cor das bananas maduras?", "opcoes": ["Verde", "Azul", "Amarela", "Vermelha"], "resposta": 2},
-            {"pergunta": "Qual é a cor das cenouras?", "opcoes": ["Verde", "Laranja", "Vermelho", "Amarelo"], "resposta": 1},
-            {"pergunta": "Quantos lados tem um triângulo?", "opcoes": ["2", "3", "4", "5"], "resposta": 1},
-            {"pergunta": "Quantos lados tem um quadrado?", "opcoes": ["2", "3", "4", "5"], "resposta": 2},
-            {"pergunta": "Qual é a cor do tomate maduro?", "opcoes": ["Verde", "Azul", "Vermelho", "Amarelo"], "resposta": 2},
-        ],
-        "Inglês": [
-            {"pergunta": "Como se diz 'Tchau' em inglês?", "opcoes": ["Hi", "Hello", "Bye", "Thanks"], "resposta": 2},
-            {"pergunta": "Como se diz 'Por favor' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 0},
-            {"pergunta": "Como se diz 'Sim' em inglês?", "opcoes": ["No", "Yes", "Maybe", "Ok"], "resposta": 1},
-            {"pergunta": "Como se diz 'Não' em inglês?", "opcoes": ["No", "Yes", "Maybe", "Ok"], "resposta": 0},
-            {"pergunta": "Como se diz 'Desculpe' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 1},
-            {"pergunta": "Como se diz 'Bom dia' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 0},
-            {"pergunta": "Como se diz 'Boa noite' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 1},
-            {"pergunta": "Como se diz 'Boa tarde' em inglês?", "opcoes": ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"], "resposta": 2},
-            {"pergunta": "Como se diz 'Obrigado' em inglês?", "opcoes": ["Please", "Sorry", "Thanks", "Welcome"], "resposta": 2},
-            {"pergunta": "Como se diz 'Olá' em inglês?", "opcoes": ["Hi", "Hello", "Bye", "Thanks"], "resposta": 0},
-        ],
-        "Computação": [
-            {"pergunta": "O que é um software?", "opcoes": ["Um hardware", "Um programa de computador", "Um periférico", "Um cabo"], "resposta": 1},
-            {"pergunta": "O que é um mouse?", "opcoes": ["Animal", "Hardware", "Software", "Periférico"], "resposta": 3},
-            {"pergunta": "Para que serve o teclado?", "opcoes": ["Mover o cursor", "Digitar textos", "Armazenar dados", "Imprimir documentos"], "resposta": 1},
-            {"pergunta": "O que é um monitor?", "opcoes": ["Dispositivo de entrada", "Dispositivo de saída", "Dispositivo de armazenamento", "Dispositivo de processamento"], "resposta": 1},
-            {"pergunta": "O que é um navegador de internet?", "opcoes": ["Programa para acessar sites", "Dispositivo de entrada", "Parte física do computador", "Dispositivo de saída"], "resposta": 0},
-            {"pergunta": "O que é um arquivo?", "opcoes": ["Parte física do computador", "Programa de computador", "Um documento ou dado armazenado", "Dispositivo de entrada"], "resposta": 2},
-            {"pergunta": "Para que serve o processador?", "opcoes": ["Processar dados", "Armazenar dados", "Imprimir documentos", "Conectar à internet"], "resposta": 0},
-            {"pergunta": "O que é um sistema operacional?", "opcoes": ["Um software", "Um hardware", "Um periférico", "Um cabo"], "resposta": 0},
-            {"pergunta": "Para que serve a memória RAM?", "opcoes": ["Armazenar dados temporários", "Armazenar dados permanentes", "Processar dados", "Conectar à internet"], "resposta": 0},
-            {"pergunta": "O que é um vírus de computador?", "opcoes": ["Um programa malicioso", "Um hardware", "Um periférico", "Um cabo"], "resposta": 0},
-        ],
+        # Adicione perguntas para o 2° Ano
     },
-    # Continue adicionando os níveis e disciplinas até o 9° Ano
+    # Adicione outros níveis até o 9° Ano
 }
-
 
 # Inicialização das variáveis globais
 saude_jogador = 100
@@ -503,19 +337,24 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
 def turno_inimigo():
     global saude_jogador, defendendo, mana_inimigo
     dano = random.randint(5, 15)
-    tipo_acao = random.choice(["Ataque", "Magia"])
+    tipo_acao = random.choice(["Ataque", "Magia", "Defesa"])
     dano_jogador = False
+    mensagem = ""
 
     if tipo_acao == "Magia" and mana_inimigo >= 10:
         mana_inimigo -= 10
         dano += 5  # Magia causa mais dano
-
-    if defendendo:
-        dano //= 2  # Reduzir dano pela metade se o jogador estiver defendendo
-        defendendo = False  # Resetar estado de defesa após reduzir dano
-        mensagem = "Defesa bem-sucedida! Dano reduzido!"
+    elif tipo_acao == "Defesa":
+        defendendo = True
+        mensagem = "O inimigo se preparou para a defesa!"
+        dano = 0  # Sem dano durante a defesa
     else:
-        mensagem = ""
+        if defendendo:
+            dano //= 2  # Reduzir dano pela metade se o jogador estiver defendendo
+            defendendo = False  # Resetar estado de defesa após reduzir dano
+            mensagem = "Defesa bem-sucedida! Dano reduzido!"
+        else:
+            mensagem = ""
 
     saude_jogador -= dano
     dano_jogador = True if dano > 0 else False
