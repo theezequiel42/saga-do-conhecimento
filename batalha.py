@@ -3,6 +3,7 @@ import random
 
 # Inicialização da Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Configurações da tela
 WIDTH, HEIGHT = 1280, 720
@@ -29,6 +30,15 @@ jogador_img = pygame.transform.scale(jogador_img, (200, 200))
 inimigo_img = pygame.transform.scale(inimigo_img, (200, 200))
 background_batalha_img = pygame.transform.scale(background_batalha_img, (WIDTH, HEIGHT))
 background_menu_img = pygame.transform.scale(background_menu_img, (WIDTH, HEIGHT))
+
+# Carregar músicas
+musica_menu = "musica_menu.mp3"
+musica_batalha = "musica_batalha.mp3"
+
+# Função para tocar música de fundo
+def tocar_musica(musica):
+    pygame.mixer.music.load(musica)
+    pygame.mixer.music.play(-1)  # Loop infinito
 
 # Função para desenhar texto na tela
 def desenhar_texto(texto, fonte, cor, superficie, x, y):
@@ -439,6 +449,7 @@ def checar_fim_batalha():
 
 # Função para exibir a tela inicial
 def tela_inicial():
+    tocar_musica(musica_menu)
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
     opcoes_menu = ["Jogar", "Tela Cheia", "Opções", "Sair"]
@@ -506,6 +517,7 @@ def definir_modo_jogo(tela_cheia):
 
 # Função principal da batalha
 def batalha():
+    tocar_musica(musica_batalha)
     global nivel_selecionado, disciplinas_selecionadas, batalha_ativa
 
     # Verificar se nível e disciplinas foram selecionados, caso contrário, solicitar seleção
