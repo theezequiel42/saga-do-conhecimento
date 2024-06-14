@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 # Configurações da tela
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("A Saga do Conhecimento - Batalha")
 
@@ -23,10 +23,12 @@ font = pygame.font.Font(None, 36)
 # Carregar e redimensionar imagens
 jogador_img = pygame.image.load("jogador.png").convert_alpha()
 inimigo_img = pygame.image.load("inimigo.png").convert_alpha()
-background_img = pygame.image.load("background.png").convert_alpha()
-jogador_img = pygame.transform.scale(jogador_img, (150, 150))
-inimigo_img = pygame.transform.scale(inimigo_img, (150, 150))
-background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
+background_batalha_img = pygame.image.load("background_batalha.png").convert_alpha()
+background_menu_img = pygame.image.load("background_menu.png").convert_alpha()
+jogador_img = pygame.transform.scale(jogador_img, (200, 200))
+inimigo_img = pygame.transform.scale(inimigo_img, (200, 200))
+background_batalha_img = pygame.transform.scale(background_batalha_img, (WIDTH, HEIGHT))
+background_menu_img = pygame.transform.scale(background_menu_img, (WIDTH, HEIGHT))
 
 # Função para desenhar texto na tela
 def desenhar_texto(texto, fonte, cor, superficie, x, y):
@@ -70,74 +72,91 @@ perguntas_por_nivel_e_disciplina = {
     # Adicione outros níveis até o 9° Ano
 }
 
-# Inicialização das variáveis globais
+# Variáveis de estado do jogo
 saude_jogador = 100
 saude_inimigo = 100
 mana_jogador = 100
 mana_inimigo = 100
+pontos_sabedoria = 0
 defendendo = False
-nivel_selecionado = "1° Ano"
-disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+nivel_selecionado = None
+disciplinas_selecionadas = None
+batalha_ativa = True
 
-# Função para desenhar barras de saúde e mana
-def desenhar_barras_de_saude():
+# Estrutura básica de quests
+quests = {
+    "Quest 1": {
+        "descrição": "Recupere o tomo perdido na floresta",
+        "completada": False
+    },
+    "Quest 2": {
+        "descrição": "Resolva o enigma da caverna",
+        "completada": False
+    }
+}
+
+# Função para desenhar HUD
+def desenhar_hud():
     # Barra de saúde do jogador
-    pygame.draw.rect(screen, VERMELHO, (20, 460, 200, 20))
-    pygame.draw.rect(screen, VERDE, (20, 460, 2 * saude_jogador, 20))
-    desenhar_texto(f"Jogador: {saude_jogador}/100", font, BRANCO, screen, 20, 430)
+    pygame.draw.rect(screen, VERMELHO, (20, 600, 200, 20))
+    pygame.draw.rect(screen, VERDE, (20, 600, 2 * saude_jogador, 20))
+    desenhar_texto(f"Jogador: {saude_jogador}/100", font, BRANCO, screen, 20, 570)
 
     # Barra de saúde do inimigo
-    pygame.draw.rect(screen, VERMELHO, (580, 460, 200, 20))
-    pygame.draw.rect(screen, VERDE, (580, 460, 2 * saude_inimigo, 20))
-    desenhar_texto(f"Inimigo: {saude_inimigo}/100", font, BRANCO, screen, 580, 430)
+    pygame.draw.rect(screen, VERMELHO, (1060, 600, 200, 20))
+    pygame.draw.rect(screen, VERDE, (1060, 600, 2 * saude_inimigo, 20))
+    desenhar_texto(f"Inimigo: {saude_inimigo}/100", font, BRANCO, screen, 1060, 570)
 
     # Barra de mana do jogador
-    pygame.draw.rect(screen, CINZA, (20, 540, 200, 20))
-    pygame.draw.rect(screen, AZUL, (20, 540, 2 * mana_jogador, 20))
-    desenhar_texto(f"Mana: {mana_jogador}/100", font, BRANCO, screen, 20, 510)
+    pygame.draw.rect(screen, CINZA, (20, 660, 200, 20))
+    pygame.draw.rect(screen, AZUL, (20, 660, 2 * mana_jogador, 20))
+    desenhar_texto(f"Mana: {mana_jogador}/100", font, BRANCO, screen, 20, 630)
 
     # Barra de mana do inimigo
-    pygame.draw.rect(screen, CINZA, (580, 540, 200, 20))
-    pygame.draw.rect(screen, AZUL, (580, 540, 2 * mana_inimigo, 20))
-    desenhar_texto(f"Mana: {mana_inimigo}/100", font, BRANCO, screen, 580, 510)
+    pygame.draw.rect(screen, CINZA, (1060, 660, 200, 20))
+    pygame.draw.rect(screen, AZUL, (1060, 660, 2 * mana_inimigo, 20))
+    desenhar_texto(f"Mana: {mana_inimigo}/100", font, BRANCO, screen, 1060, 630)
+
+    # Pontos de sabedoria
+    desenhar_texto(f"Pontos de Sabedoria: {pontos_sabedoria}", font, BRANCO, screen, 540, 20)
 
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
     if dano_jogador:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(jogador_img, (50, 250))
+            screen.blit(jogador_img, (100, 250))
             pygame.display.flip()
             pygame.time.delay(100)
             jogador_img_mod = jogador_img.copy()
             jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(jogador_img_mod, (50, 250))
+            screen.blit(jogador_img_mod, (100, 250))
             pygame.display.flip()
             pygame.time.delay(100)
     else:
-        screen.blit(jogador_img, (50, 250))
+        screen.blit(jogador_img, (100, 250))
 
     if dano_inimigo:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(inimigo_img, (600, 250))
+            screen.blit(inimigo_img, (980, 250))
             pygame.display.flip()
             pygame.time.delay(100)
             inimigo_img_mod = inimigo_img.copy()
             inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(inimigo_img_mod, (600, 250))
+            screen.blit(inimigo_img_mod, (980, 250))
             pygame.display.flip()
             pygame.time.delay(100)
     else:
-        screen.blit(inimigo_img, (600, 250))
+        screen.blit(inimigo_img, (980, 250))
 
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
     largura_barra = int((tempo_restante / tempo_total) * 400)
-    pygame.draw.rect(screen, AZUL, (200, 80, largura_barra, 20))
+    pygame.draw.rect(screen, AZUL, (440, 80, largura_barra, 20))
 
 # Função para selecionar nível e disciplina
 def selecionar_nivel_e_disciplina():
     global nivel_selecionado, disciplinas_selecionadas
-    screen.blit(background_img, (0, 0))
+    screen.blit(background_menu_img, (0, 0))
     desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
     niveis = ["1° Ano", "2° Ano", "3° Ano", "4° Ano", "5° Ano", "6° Ano", "7° Ano", "8° Ano", "9° Ano"]
     retangulos_niveis = []
@@ -156,7 +175,7 @@ def selecionar_nivel_e_disciplina():
                 for i, ret in enumerate(retangulos_niveis):
                     if ret.collidepoint(evento.pos):
                         nivel_selecionado = niveis[i]
-    screen.blit(background_img, (0, 0))
+    screen.blit(background_menu_img, (0, 0))
     desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
     disciplinas = ["Matemática", "Língua Portuguesa", "Ciências", "História", "Geografia", "Educação Física", "Inglês", "Arte"]
     retangulos_disciplinas = []
@@ -179,12 +198,12 @@ def selecionar_nivel_e_disciplina():
                 for i, ret in enumerate(retangulos_disciplinas):
                     if ret.collidepoint(evento.pos):
                         disciplinas_selecionadas.append(disciplinas[i])
-    return nivel_selecionado, disciplinas_selecionadas
+    tela_inicial()
 
 # Função para selecionar ação
 def selecionar_acao():
-    screen.blit(background_img, (0, 0))
-    desenhar_barras_de_saude()
+    screen.blit(background_batalha_img, (0, 0))
+    desenhar_hud()
     desenhar_personagens()
     desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
     ret_ataque = desenhar_texto("Pressione 1 para Ataque", font, BRANCO, screen, 20, 60)
@@ -222,8 +241,8 @@ def selecionar_acao():
 # Função para apresentar pergunta
 def apresentar_pergunta(perguntas, tempo_total):
     pergunta = random.choice(perguntas)
-    screen.blit(background_img, (0, 0))
-    desenhar_barras_de_saude()
+    screen.blit(background_batalha_img, (0, 0))
+    desenhar_hud()
     desenhar_personagens()
     desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
     desenhar_barra_tempo(tempo_total, tempo_total)
@@ -267,8 +286,8 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
                         opcao_selecionada = i
 
         # Atualizar cronômetro na tela
-        screen.blit(background_img, (0, 0))
-        desenhar_barras_de_saude()
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud()
         desenhar_personagens()
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
         for i, opcao in enumerate(pergunta["opcoes"]):
@@ -287,7 +306,7 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
 
 # Função para executar ação
 def executar_acao(acao, resposta_correta, tempo_resposta):
-    global saude_inimigo, defendendo, mana_jogador, batalha_ativa
+    global saude_inimigo, defendendo, mana_jogador, batalha_ativa, pontos_sabedoria
     dano = 0
     mensagem = ""
     dano_inimigo = False
@@ -314,6 +333,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
             elif acao == "Defesa":
                 defendendo = True
                 mensagem = "Você se preparou para a defesa!"
+            pontos_sabedoria += 10
         else:
             if acao == "Defesa":
                 defendendo = False
@@ -325,8 +345,8 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
         dano_inimigo = True if dano > 0 else False
 
-    screen.blit(background_img, (0, 0))
-    desenhar_barras_de_saude()
+    screen.blit(background_batalha_img, (0, 0))
+    desenhar_hud()
     desenhar_personagens(dano_inimigo=dano_inimigo)
     desenhar_texto(mensagem, font, BRANCO, screen, 20, 20)
     desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", font, BRANCO, screen, 20, 60)
@@ -359,8 +379,8 @@ def turno_inimigo():
     saude_jogador -= dano
     dano_jogador = True if dano > 0 else False
 
-    screen.blit(background_img, (0, 0))
-    desenhar_barras_de_saude()
+    screen.blit(background_batalha_img, (0, 0))
+    desenhar_hud()
     desenhar_personagens(dano_jogador=dano_jogador)
     desenhar_texto(f"O inimigo causou {dano} de dano!", font, BRANCO, screen, 20, 20)
     desenhar_texto(mensagem, font, BRANCO, screen, 20, 60)
@@ -377,10 +397,12 @@ def checar_fim_batalha():
 
 # Função para exibir a tela inicial
 def tela_inicial():
-    screen.blit(background_img, (0, 0))
+    screen.blit(background_menu_img, (0, 0))
     desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
     ret_jogar = desenhar_texto("Jogar", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
-    ret_opcoes = desenhar_texto("Opções", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 50)
+    ret_tela_cheia = desenhar_texto("Tela Cheia", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 50)
+    ret_opcoes = desenhar_texto("Opções", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 100)
+    ret_sair = desenhar_texto("Sair", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 150)
     pygame.display.flip()
 
     jogando = False
@@ -392,26 +414,39 @@ def tela_inicial():
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 if ret_jogar.collidepoint(evento.pos):
                     jogando = True
+                    batalha()
+                elif ret_tela_cheia.collidepoint(evento.pos):
+                    definir_modo_jogo(True)
+                    tela_inicial()
                 elif ret_opcoes.collidepoint(evento.pos):
                     selecionar_nivel_e_disciplina()
-                    jogando = True
+                elif ret_sair.collidepoint(evento.pos):
+                    pygame.quit()
+                    exit()
+
+# Função para definir o modo de jogo
+def definir_modo_jogo(tela_cheia):
+    global screen, background_batalha_img, background_menu_img
+    if tela_cheia:
+        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    else:
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    background_batalha_img = pygame.transform.scale(pygame.image.load("background_batalha.png").convert_alpha(), (WIDTH, HEIGHT))
+    background_menu_img = pygame.transform.scale(pygame.image.load("background_menu.png").convert_alpha(), (WIDTH, HEIGHT))
 
 # Função principal da batalha
 def batalha():
     global nivel_selecionado, disciplinas_selecionadas, batalha_ativa
-    tela_inicial()
 
-    # Usar o primeiro ano e todas as disciplinas por padrão, se não forem selecionados
-    if not nivel_selecionado:
-        nivel_selecionado = "1° Ano"
-    if not disciplinas_selecionadas:
-        disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+    # Verificar se nível e disciplinas foram selecionados, caso contrário, solicitar seleção
+    if not nivel_selecionado or not disciplinas_selecionadas:
+        selecionar_nivel_e_disciplina()
 
     perguntas = []
     for disciplina in disciplinas_selecionadas:
         perguntas.extend(perguntas_por_nivel_e_disciplina[nivel_selecionado][disciplina])
 
-    screen.blit(background_img, (0, 0))
+    screen.blit(background_batalha_img, (0, 0))
     desenhar_texto(f"Nível: {nivel_selecionado}", font, BRANCO, screen, 20, 20)
     desenhar_texto(f"Disciplinas: {', '.join(disciplinas_selecionadas)}", font, BRANCO, screen, 20, 60)
     pygame.display.flip()
@@ -423,6 +458,7 @@ def batalha():
         acao = selecionar_acao()
         if acao == "Fugir":
             executar_acao(acao, False, 0)
+            tela_inicial()
             break
         pergunta, opcoes_rects = apresentar_pergunta(perguntas, tempo_total_pergunta)
         resposta_correta, tempo_resposta = avaliar_resposta(pergunta, opcoes_rects, tempo_total_pergunta)
@@ -430,8 +466,8 @@ def batalha():
         resultado = checar_fim_batalha()
         if resultado:
             batalha_ativa = False
-            screen.blit(background_img, (0, 0))
-            desenhar_barras_de_saude()
+            screen.blit(background_batalha_img, (0, 0))
+            desenhar_hud()
             desenhar_personagens()
             desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
             pygame.display.flip()
@@ -441,13 +477,13 @@ def batalha():
             resultado = checar_fim_batalha()
             if resultado:
                 batalha_ativa = False
-                screen.blit(background_img, (0, 0))
-                desenhar_barras_de_saude()
+                screen.blit(background_batalha_img, (0, 0))
+                desenhar_hud()
                 desenhar_personagens()
                 desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
                 pygame.display.flip()
                 pygame.time.delay(3000)
 
-# Iniciar a batalha
-batalha()
+# Iniciar a tela inicial
+tela_inicial()
 pygame.quit()
