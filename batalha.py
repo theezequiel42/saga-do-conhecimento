@@ -31,14 +31,25 @@ inimigo_img = pygame.transform.scale(inimigo_img, (200, 200))
 background_batalha_img = pygame.transform.scale(background_batalha_img, (WIDTH, HEIGHT))
 background_menu_img = pygame.transform.scale(background_menu_img, (WIDTH, HEIGHT))
 
-# Carregar músicas
+# Carregar músicas e sons
 musica_menu = "musica_menu.mp3"
 musica_batalha = "musica_batalha.mp3"
+som_vitoria = "som_vitoria.mp3"
+som_derrota = "som_derrota.mp3"
 
 # Função para tocar música de fundo
 def tocar_musica(musica):
     pygame.mixer.music.load(musica)
     pygame.mixer.music.play(-1)  # Loop infinito
+
+# Função para parar música
+def parar_musica():
+    pygame.mixer.music.stop()
+
+# Função para tocar som de vitória ou derrota
+def tocar_som(som):
+    efeito = pygame.mixer.Sound(som)
+    efeito.play()
 
 # Função para desenhar texto na tela
 def desenhar_texto(texto, fonte, cor, superficie, x, y):
@@ -89,8 +100,8 @@ mana_jogador = 100
 mana_inimigo = 100
 pontos_sabedoria = 0
 defendendo = False
-nivel_selecionado = None
-disciplinas_selecionadas = None
+nivel_selecionado = "1° Ano"
+disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
 batalha_ativa = True
 
 # Estrutura básica de quests
@@ -173,46 +184,62 @@ def selecionar_nivel_e_disciplina():
     for i, nivel in enumerate(niveis):
         retangulo = desenhar_texto(f"{i+1}. {nivel}", font, BRANCO, screen, 20, 60 + i * 40)
         retangulos_niveis.append(retangulo)
+    ret_voltar_nivel = desenhar_texto("Voltar ao Início", font, BRANCO, screen, WIDTH - 200, HEIGHT - 50)
     pygame.display.flip()
 
-    nivel_selecionado = None
     opcao_selecionada = 0
-    while nivel_selecionado is None:
+    while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_DOWN:
-                    opcao_selecionada = (opcao_selecionada + 1) % len(retangulos_niveis)
+                    opcao_selecionada = (opcao_selecionada + 1) % (len(retangulos_niveis) + 1)
                 elif evento.key == pygame.K_UP:
-                    opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_niveis)
+                    opcao_selecionada = (opcao_selecionada - 1) % (len(retangulos_niveis) + 1)
                 elif evento.key == pygame.K_RETURN:
-                    nivel_selecionado = niveis[opcao_selecionada]
+                    if opcao_selecionada < len(niveis):
+                        nivel_selecionado = niveis[opcao_selecionada]
+                        disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+                        selecionar_disciplina()
+                        return
+                    else:
+                        tela_inicial()
+                        return
             if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_voltar_nivel.collidepoint(evento.pos):
+                    tela_inicial()
+                    return
                 for i, ret in enumerate(retangulos_niveis):
                     if ret.collidepoint(evento.pos):
                         nivel_selecionado = niveis[i]
+                        disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+                        selecionar_disciplina()
+                        return
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
         for i, nivel in enumerate(niveis):
             cor = VERDE if i == opcao_selecionada else BRANCO
             desenhar_texto(f"{i+1}. {nivel}", font, cor, screen, 20, 60 + i * 40)
+        cor = VERDE if opcao_selecionada == len(niveis) else BRANCO
+        desenhar_texto("Voltar ao Início", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
 
+def selecionar_disciplina():
+    global disciplinas_selecionadas
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
-    disciplinas = ["Matemática", "Língua Portuguesa", "Ciências", "História", "Geografia", "Educação Física", "Inglês", "Arte"]
+    disciplinas = ["Todas as Disciplinas"] + list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
     retangulos_disciplinas = []
     for i, disciplina in enumerate(disciplinas):
         retangulo = desenhar_texto(f"{i+1}. {disciplina}", font, BRANCO, screen, 20, 60 + i * 40)
         retangulos_disciplinas.append(retangulo)
-    ret_voltar = desenhar_texto("Voltar ao Início", font, BRANCO, screen, WIDTH - 200, HEIGHT - 50)
+    ret_voltar_disciplina = desenhar_texto("Voltar ao Nível", font, BRANCO, screen, WIDTH - 200, HEIGHT - 50)
     pygame.display.flip()
 
-    disciplinas_selecionadas = []
     opcao_selecionada = 0
-    while not disciplinas_selecionadas:
+    while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -223,28 +250,35 @@ def selecionar_nivel_e_disciplina():
                 elif evento.key == pygame.K_UP:
                     opcao_selecionada = (opcao_selecionada - 1) % (len(retangulos_disciplinas) + 1)
                 elif evento.key == pygame.K_RETURN:
-                    if opcao_selecionada < len(disciplinas):
-                        disciplinas_selecionadas.append(disciplinas[opcao_selecionada])
+                    if opcao_selecionada < len(disciplinas) - 1:
+                        disciplinas_selecionadas = [disciplinas[opcao_selecionada]]
+                    elif opcao_selecionada == 0:
+                        disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
                     else:
-                        tela_inicial()
+                        selecionar_nivel_e_disciplina()
                         return
+                    batalha()
+                    return
             if evento.type == pygame.MOUSEBUTTONDOWN:
-                if ret_voltar.collidepoint(evento.pos):
-                    tela_inicial()
+                if ret_voltar_disciplina.collidepoint(evento.pos):
+                    selecionar_nivel_e_disciplina()
                     return
                 for i, ret in enumerate(retangulos_disciplinas):
                     if ret.collidepoint(evento.pos):
-                        disciplinas_selecionadas.append(disciplinas[i])
+                        if i == 0:
+                            disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+                        else:
+                            disciplinas_selecionadas = [disciplinas[i]]
+                        batalha()
+                        return
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
         for i, disciplina in enumerate(disciplinas):
             cor = VERDE if i == opcao_selecionada else BRANCO
             desenhar_texto(f"{i+1}. {disciplina}", font, cor, screen, 20, 60 + i * 40)
         cor = VERDE if opcao_selecionada == len(disciplinas) else BRANCO
-        desenhar_texto("Voltar ao Início", font, cor, screen, WIDTH - 200, HEIGHT - 50)
+        desenhar_texto("Voltar ao Nível", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
-
-    tela_inicial()
 
 # Função para selecionar ação
 def selecionar_acao():
@@ -475,7 +509,7 @@ def tela_inicial():
                 elif evento.key == pygame.K_RETURN:
                     if opcao_selecionada == 0:
                         jogando = True
-                        batalha()
+                        selecionar_nivel_e_disciplina()
                     elif opcao_selecionada == 1:
                         definir_modo_jogo(True)
                         tela_inicial()
@@ -489,7 +523,7 @@ def tela_inicial():
                     if ret.collidepoint(evento.pos):
                         if i == 0:
                             jogando = True
-                            batalha()
+                            selecionar_nivel_e_disciplina()
                         elif i == 1:
                             definir_modo_jogo(True)
                             tela_inicial()
@@ -518,11 +552,7 @@ def definir_modo_jogo(tela_cheia):
 # Função principal da batalha
 def batalha():
     tocar_musica(musica_batalha)
-    global nivel_selecionado, disciplinas_selecionadas, batalha_ativa
-
-    # Verificar se nível e disciplinas foram selecionados, caso contrário, solicitar seleção
-    if not nivel_selecionado or not disciplinas_selecionadas:
-        selecionar_nivel_e_disciplina()
+    global saude_jogador, saude_inimigo, mana_jogador, mana_inimigo, pontos_sabedoria, nivel_selecionado, disciplinas_selecionadas, batalha_ativa
 
     perguntas = []
     for disciplina in disciplinas_selecionadas:
@@ -548,23 +578,38 @@ def batalha():
         resultado = checar_fim_batalha()
         if resultado:
             batalha_ativa = False
+            parar_musica()
+            tocar_som(som_vitoria if resultado == "Vitória" else som_derrota)
             screen.blit(background_batalha_img, (0, 0))
             desenhar_hud()
             desenhar_personagens()
             desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
             pygame.display.flip()
             pygame.time.delay(3000)
+            tela_inicial()
         else:
             turno_inimigo()
             resultado = checar_fim_batalha()
             if resultado:
                 batalha_ativa = False
+                parar_musica()
+                tocar_som(som_vitoria if resultado == "Vitória" else som_derrota)
                 screen.blit(background_batalha_img, (0, 0))
                 desenhar_hud()
                 desenhar_personagens()
                 desenhar_texto(resultado, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
                 pygame.display.flip()
                 pygame.time.delay(3000)
+                tela_inicial()
+
+    # Resetar estados do jogador e inimigo
+    saude_jogador = 100
+    saude_inimigo = 100
+    mana_jogador = 100
+    mana_inimigo = 100
+    pontos_sabedoria = 0
+    nivel_selecionado = "1° Ano"
+    disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
 
 # Iniciar a tela inicial
 tela_inicial()
