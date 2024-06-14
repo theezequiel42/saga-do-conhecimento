@@ -166,15 +166,30 @@ def selecionar_nivel_e_disciplina():
     pygame.display.flip()
 
     nivel_selecionado = None
+    opcao_selecionada = 0
     while nivel_selecionado is None:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN:
+                    opcao_selecionada = (opcao_selecionada + 1) % len(retangulos_niveis)
+                elif evento.key == pygame.K_UP:
+                    opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_niveis)
+                elif evento.key == pygame.K_RETURN:
+                    nivel_selecionado = niveis[opcao_selecionada]
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 for i, ret in enumerate(retangulos_niveis):
                     if ret.collidepoint(evento.pos):
                         nivel_selecionado = niveis[i]
+        screen.blit(background_menu_img, (0, 0))
+        desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
+        for i, nivel in enumerate(niveis):
+            cor = VERDE if i == opcao_selecionada else BRANCO
+            desenhar_texto(f"{i+1}. {nivel}", font, cor, screen, 20, 60 + i * 40)
+        pygame.display.flip()
+
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
     disciplinas = ["Matemática", "Língua Portuguesa", "Ciências", "História", "Geografia", "Educação Física", "Inglês", "Arte"]
@@ -186,11 +201,23 @@ def selecionar_nivel_e_disciplina():
     pygame.display.flip()
 
     disciplinas_selecionadas = []
+    opcao_selecionada = 0
     while not disciplinas_selecionadas:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN:
+                    opcao_selecionada = (opcao_selecionada + 1) % (len(retangulos_disciplinas) + 1)
+                elif evento.key == pygame.K_UP:
+                    opcao_selecionada = (opcao_selecionada - 1) % (len(retangulos_disciplinas) + 1)
+                elif evento.key == pygame.K_RETURN:
+                    if opcao_selecionada < len(disciplinas):
+                        disciplinas_selecionadas.append(disciplinas[opcao_selecionada])
+                    else:
+                        tela_inicial()
+                        return
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 if ret_voltar.collidepoint(evento.pos):
                     tela_inicial()
@@ -198,6 +225,15 @@ def selecionar_nivel_e_disciplina():
                 for i, ret in enumerate(retangulos_disciplinas):
                     if ret.collidepoint(evento.pos):
                         disciplinas_selecionadas.append(disciplinas[i])
+        screen.blit(background_menu_img, (0, 0))
+        desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
+        for i, disciplina in enumerate(disciplinas):
+            cor = VERDE if i == opcao_selecionada else BRANCO
+            desenhar_texto(f"{i+1}. {disciplina}", font, cor, screen, 20, 60 + i * 40)
+        cor = VERDE if opcao_selecionada == len(disciplinas) else BRANCO
+        desenhar_texto("Voltar ao Início", font, cor, screen, WIDTH - 200, HEIGHT - 50)
+        pygame.display.flip()
+
     tela_inicial()
 
 # Função para selecionar ação
@@ -213,29 +249,35 @@ def selecionar_acao():
     pygame.display.flip()
 
     acao_selecionada = None
+    opcao_selecionada = 0
+    retangulos_acoes = [ret_ataque, ret_magia, ret_defesa, ret_fugir]
+
     while acao_selecionada is None:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_1:
-                    acao_selecionada = "Ataque"
-                elif evento.key == pygame.K_2:
-                    acao_selecionada = "Magia"
-                elif evento.key == pygame.K_3:
-                    acao_selecionada = "Defesa"
-                elif evento.key == pygame.K_4:
-                    acao_selecionada = "Fugir"
+                if evento.key == pygame.K_DOWN:
+                    opcao_selecionada = (opcao_selecionada + 1) % len(retangulos_acoes)
+                elif evento.key == pygame.K_UP:
+                    opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_acoes)
+                elif evento.key == pygame.K_RETURN:
+                    acao_selecionada = ["Ataque", "Magia", "Defesa", "Fugir"][opcao_selecionada]
             if evento.type == pygame.MOUSEBUTTONDOWN:
-                if ret_ataque.collidepoint(evento.pos):
-                    acao_selecionada = "Ataque"
-                elif ret_magia.collidepoint(evento.pos):
-                    acao_selecionada = "Magia"
-                elif ret_defesa.collidepoint(evento.pos):
-                    acao_selecionada = "Defesa"
-                elif ret_fugir.collidepoint(evento.pos):
-                    acao_selecionada = "Fugir"
+                for i, ret in enumerate(retangulos_acoes):
+                    if ret.collidepoint(evento.pos):
+                        acao_selecionada = ["Ataque", "Magia", "Defesa", "Fugir"][i]
+
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud()
+        desenhar_personagens()
+        desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
+        for i, (texto, ret) in enumerate(zip(["Pressione 1 para Ataque", "Pressione 2 para Magia", "Pressione 3 para Defesa", "Pressione 4 para Fugir"], retangulos_acoes)):
+            cor = VERDE if i == opcao_selecionada else BRANCO
+            desenhar_texto(texto, font, cor, screen, 20, 60 + i * 40)
+        pygame.display.flip()
+
     return acao_selecionada
 
 # Função para apresentar pergunta
@@ -258,6 +300,7 @@ def apresentar_pergunta(perguntas, tempo_total):
 def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
     tempo_inicio = pygame.time.get_ticks()
     opcao_selecionada = None
+    indice_opcao_selecionada = 0
 
     while opcao_selecionada is None:
         tempo_atual = pygame.time.get_ticks()
@@ -272,14 +315,12 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
                 pygame.quit()
                 exit()
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_1:
-                    opcao_selecionada = 0
-                elif evento.key == pygame.K_2:
-                    opcao_selecionada = 1
-                elif evento.key == pygame.K_3:
-                    opcao_selecionada = 2
-                elif evento.key == pygame.K_4:
-                    opcao_selecionada = 3
+                if evento.key == pygame.K_DOWN:
+                    indice_opcao_selecionada = (indice_opcao_selecionada + 1) % len(opcoes_rects)
+                elif evento.key == pygame.K_UP:
+                    indice_opcao_selecionada = (indice_opcao_selecionada - 1) % len(opcoes_rects)
+                elif evento.key == pygame.K_RETURN:
+                    opcao_selecionada = indice_opcao_selecionada
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 for i, rect in enumerate(opcoes_rects):
                     if rect.collidepoint(evento.pos):
@@ -291,7 +332,8 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
         desenhar_personagens()
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
         for i, opcao in enumerate(pergunta["opcoes"]):
-            desenhar_texto(f"Pressione {i+1} para {opcao}", font, BRANCO, screen, 20, 120 + i * 40)
+            cor = VERDE if i == indice_opcao_selecionada else BRANCO
+            desenhar_texto(f"Pressione {i+1} para {opcao}", font, cor, screen, 20, 120 + i * 40)
         desenhar_barra_tempo(tempo_restante, tempo_total)
         pygame.display.flip()
 
@@ -399,30 +441,58 @@ def checar_fim_batalha():
 def tela_inicial():
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
-    ret_jogar = desenhar_texto("Jogar", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2)
-    ret_tela_cheia = desenhar_texto("Tela Cheia", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 50)
-    ret_opcoes = desenhar_texto("Opções", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 100)
-    ret_sair = desenhar_texto("Sair", font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + 150)
+    opcoes_menu = ["Jogar", "Tela Cheia", "Opções", "Sair"]
+    retangulos_menu = []
+    for i, opcao in enumerate(opcoes_menu):
+        retangulo = desenhar_texto(opcao, font, BRANCO, screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50)
+        retangulos_menu.append(retangulo)
     pygame.display.flip()
 
     jogando = False
+    opcao_selecionada = 0
+
     while not jogando:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_DOWN:
+                    opcao_selecionada = (opcao_selecionada + 1) % len(retangulos_menu)
+                elif evento.key == pygame.K_UP:
+                    opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_menu)
+                elif evento.key == pygame.K_RETURN:
+                    if opcao_selecionada == 0:
+                        jogando = True
+                        batalha()
+                    elif opcao_selecionada == 1:
+                        definir_modo_jogo(True)
+                        tela_inicial()
+                    elif opcao_selecionada == 2:
+                        selecionar_nivel_e_disciplina()
+                    elif opcao_selecionada == 3:
+                        pygame.quit()
+                        exit()
             if evento.type == pygame.MOUSEBUTTONDOWN:
-                if ret_jogar.collidepoint(evento.pos):
-                    jogando = True
-                    batalha()
-                elif ret_tela_cheia.collidepoint(evento.pos):
-                    definir_modo_jogo(True)
-                    tela_inicial()
-                elif ret_opcoes.collidepoint(evento.pos):
-                    selecionar_nivel_e_disciplina()
-                elif ret_sair.collidepoint(evento.pos):
-                    pygame.quit()
-                    exit()
+                for i, ret in enumerate(retangulos_menu):
+                    if ret.collidepoint(evento.pos):
+                        if i == 0:
+                            jogando = True
+                            batalha()
+                        elif i == 1:
+                            definir_modo_jogo(True)
+                            tela_inicial()
+                        elif i == 2:
+                            selecionar_nivel_e_disciplina()
+                        elif i == 3:
+                            pygame.quit()
+                            exit()
+        screen.blit(background_menu_img, (0, 0))
+        desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
+        for i, opcao in enumerate(opcoes_menu):
+            cor = VERDE if i == opcao_selecionada else BRANCO
+            desenhar_texto(opcao, font, cor, screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50)
+        pygame.display.flip()
 
 # Função para definir o modo de jogo
 def definir_modo_jogo(tela_cheia):
