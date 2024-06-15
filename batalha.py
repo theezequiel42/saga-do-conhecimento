@@ -106,18 +106,6 @@ nivel_selecionado = "1° Ano"
 disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
 batalha_ativa = True
 
-# Estrutura básica de quests
-quests = {
-    "Quest 1": {
-        "descrição": "Recupere o tomo perdido na floresta",
-        "completada": False
-    },
-    "Quest 2": {
-        "descrição": "Resolva o enigma da caverna",
-        "completada": False
-    }
-}
-
 # Função para desenhar HUD
 def desenhar_hud():
     # Barra de saúde do jogador
@@ -141,7 +129,7 @@ def desenhar_hud():
     desenhar_texto(f"Mana: {mana_inimigo}/100", font, BRANCO, screen, 1060, 630)
 
     # Pontos de sabedoria
-    desenhar_texto(f"Pontos de Sabedoria: {pontos_sabedoria}", font, BRANCO, screen, 540, 20)
+    desenhar_texto(f"Pontos de Sabedoria: {pontos_sabedoria}", font, BRANCO, screen, WIDTH - 300, 20)
 
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
