@@ -17,6 +17,8 @@ VERDE = (0, 255, 0)
 VERMELHO = (255, 0, 0)
 AZUL = (0, 0, 255)
 CINZA = (169, 169, 169)
+CINZA_CLARO = (211, 211, 211)
+AMARELO = (255, 255, 0)
 
 # Fonte
 font = pygame.font.Font(None, 36)
@@ -143,31 +145,34 @@ def desenhar_hud():
 
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
+    jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
+    inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
+
     if dano_jogador:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(jogador_img, (100, 250))
+            screen.blit(jogador_img, jogador_pos)
             pygame.display.flip()
             pygame.time.delay(100)
             jogador_img_mod = jogador_img.copy()
             jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(jogador_img_mod, (100, 250))
+            screen.blit(jogador_img_mod, jogador_pos)
             pygame.display.flip()
             pygame.time.delay(100)
     else:
-        screen.blit(jogador_img, (100, 250))
+        screen.blit(jogador_img, jogador_pos)
 
     if dano_inimigo:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(inimigo_img, (980, 250))
+            screen.blit(inimigo_img, inimigo_pos)
             pygame.display.flip()
             pygame.time.delay(100)
             inimigo_img_mod = inimigo_img.copy()
             inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(inimigo_img_mod, (980, 250))
+            screen.blit(inimigo_img_mod, inimigo_pos)
             pygame.display.flip()
             pygame.time.delay(100)
     else:
-        screen.blit(inimigo_img, (980, 250))
+        screen.blit(inimigo_img, inimigo_pos)
 
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
@@ -226,9 +231,11 @@ def selecionar_nivel_e_disciplina():
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
         for i, nivel in enumerate(niveis):
-            cor = VERDE if i == opcao_selecionada else BRANCO
+            cor = PRETO if i == opcao_selecionada else BRANCO
+            pygame.draw.rect(screen, AMARELO, retangulos_niveis[i]) if i == opcao_selecionada else None
             desenhar_texto(f"{i+1}. {nivel}", font, cor, screen, 20, 60 + i * 40)
-        cor = VERDE if opcao_selecionada == len(niveis) else BRANCO
+        cor = PRETO if opcao_selecionada == len(niveis) else BRANCO
+        pygame.draw.rect(screen, AMARELO, ret_voltar_nivel) if opcao_selecionada == len(niveis) else None
         desenhar_texto("Voltar ao Início", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
 
@@ -284,9 +291,11 @@ def selecionar_disciplina():
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
         for i, disciplina in enumerate(disciplinas):
-            cor = VERDE if i == opcao_selecionada else BRANCO
+            cor = PRETO if i == opcao_selecionada else BRANCO
+            pygame.draw.rect(screen, AMARELO, retangulos_disciplinas[i]) if i == opcao_selecionada else None
             desenhar_texto(f"{i+1}. {disciplina}", font, cor, screen, 20, 60 + i * 40)
-        cor = VERDE if opcao_selecionada == len(disciplinas) else BRANCO
+        cor = PRETO if opcao_selecionada == len(disciplinas) else BRANCO
+        pygame.draw.rect(screen, AMARELO, ret_voltar_disciplina) if opcao_selecionada == len(disciplinas) else None
         desenhar_texto("Voltar ao Nível", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
 
@@ -332,7 +341,8 @@ def selecionar_acao():
         desenhar_personagens()
         desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
         for i, (texto, ret) in enumerate(zip(["Ataque", "Magia", "Defesa", "Fugir"], retangulos_acoes)):
-            cor = VERDE if i == opcao_selecionada else BRANCO
+            cor = PRETO if i == opcao_selecionada else BRANCO
+            pygame.draw.rect(screen, AMARELO, ret) if i == opcao_selecionada else None
             desenhar_texto(texto, font, cor, screen, 20, 60 + i * 40)
         pygame.display.flip()
 
@@ -349,8 +359,8 @@ def apresentar_pergunta(perguntas, tempo_total):
 
     opcoes_rects = []
     for i, opcao in enumerate(pergunta["opcoes"]):
-        ret_opcao = desenhar_texto(opcao, font, BRANCO, screen, 20, 120 + i * 40)
-        opcoes_rects.append(ret_opcao)
+        ret_opcao = desenhar_texto(opcao, font, BRANCO, screen, 20, 120 + i * 30)  # Distância entre opções de 30 pixels
+        opcoes_rects.append(pygame.Rect(20, 120 + i * 30, WIDTH - 40, 30))  # Área clicável
     pygame.display.flip()
     return pergunta, opcoes_rects
 
@@ -394,8 +404,9 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
         desenhar_personagens()
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
         for i, opcao in enumerate(pergunta["opcoes"]):
-            cor = VERDE if i == indice_opcao_selecionada else BRANCO
-            desenhar_texto(opcao, font, cor, screen, 20, 120 + i * 40)
+            cor = PRETO if i == indice_opcao_selecionada else BRANCO
+            pygame.draw.rect(screen, CINZA_CLARO, opcoes_rects[i]) if i == indice_opcao_selecionada else None
+            desenhar_texto(opcao, font, cor, screen, 20, 120 + i * 30)  # Distância entre opções de 30 pixels
         desenhar_barra_tempo(tempo_restante, tempo_total)
         pygame.display.flip()
 
@@ -557,7 +568,8 @@ def tela_inicial():
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
         for i, opcao in enumerate(opcoes_menu):
-            cor = VERDE if i == opcao_selecionada else BRANCO
+            cor = PRETO if i == opcao_selecionada else BRANCO
+            pygame.draw.rect(screen, AMARELO, retangulos_menu[i]) if i == opcao_selecionada else None
             desenhar_texto(opcao, font, cor, screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50)
         pygame.display.flip()
 
