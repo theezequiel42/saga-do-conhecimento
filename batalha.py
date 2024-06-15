@@ -1,5 +1,6 @@
 import pygame
 import random
+import os
 
 # Inicialização da Pygame
 pygame.init()
@@ -24,10 +25,8 @@ AMARELO = (255, 255, 0)
 font = pygame.font.Font(None, 36)
 
 # Carregar e redimensionar imagens
-inimigo_img = pygame.image.load("inimigo.png").convert_alpha()
 background_batalha_img = pygame.image.load("background_batalha.png").convert_alpha()
 background_menu_img = pygame.image.load("background_menu.png").convert_alpha()
-inimigo_img = pygame.transform.scale(inimigo_img, (200, 200))
 background_batalha_img = pygame.transform.scale(background_batalha_img, (WIDTH, HEIGHT))
 background_menu_img = pygame.transform.scale(background_menu_img, (WIDTH, HEIGHT))
 
@@ -60,6 +59,8 @@ def desenhar_texto(texto, fonte, cor, superficie, x, y):
 
 # Função para carregar os frames da animação
 def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
+    if not os.path.isfile(caminho):
+        raise FileNotFoundError(f"No file '{caminho}' found in working directory '{os.getcwd()}'.")
     sprite_sheet = pygame.image.load(caminho).convert_alpha()
     frames = []
     for i in range(num_frames):
@@ -71,6 +72,11 @@ def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
 jogador_frames = carregar_animacao("idle-Sheet.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
 jogador_frame_atual = 0
 jogador_frame_tempo = 0
+
+# Carregar animação do inimigo
+inimigo_frames = carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
+inimigo_frame_atual = 0
+inimigo_frame_tempo = 0
 
 # Perguntas organizadas por nível e disciplina
 perguntas_por_nivel_e_disciplina = {
@@ -146,6 +152,7 @@ def desenhar_hud():
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
     global jogador_frame_atual, jogador_frame_tempo
+    global inimigo_frame_atual, inimigo_frame_tempo
 
     jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
     inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
@@ -157,19 +164,36 @@ def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
         jogador_frame_tempo = 0
         jogador_frame_atual = (jogador_frame_atual + 1) % len(jogador_frames)
 
-    # Desenhar inimigo
-    if dano_inimigo:
+    # Animação do inimigo
+    screen.blit(inimigo_frames[inimigo_frame_atual], inimigo_pos)
+    inimigo_frame_tempo += 1
+    if inimigo_frame_tempo >= 150:  # Ajuste a velocidade da animação (maior valor para mais devagar)
+        inimigo_frame_tempo = 0
+        inimigo_frame_atual = (inimigo_frame_atual + 1) % len(inimigo_frames)
+
+    # Desenhar dano no jogador
+    if dano_jogador:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(inimigo_img, inimigo_pos)
+            screen.blit(jogador_frames[jogador_frame_atual], jogador_pos)
             pygame.display.flip()
             pygame.time.delay(100)
-            inimigo_img_mod = inimigo_img.copy()
+            jogador_img_mod = jogador_frames[jogador_frame_atual].copy()
+            jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            screen.blit(jogador_img_mod, jogador_pos)
+            pygame.display.flip()
+            pygame.time.delay(100)
+
+    # Desenhar dano no inimigo
+    if dano_inimigo:
+        for _ in range(3):  # Piscar 3 vezes
+            screen.blit(inimigo_frames[inimigo_frame_atual], inimigo_pos)
+            pygame.display.flip()
+            pygame.time.delay(100)
+            inimigo_img_mod = inimigo_frames[inimigo_frame_atual].copy()
             inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
             screen.blit(inimigo_img_mod, inimigo_pos)
             pygame.display.flip()
             pygame.time.delay(100)
-    else:
-        screen.blit(inimigo_img, inimigo_pos)
 
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
@@ -633,14 +657,14 @@ def batalha():
                 pygame.time.delay(3000)
                 tela_inicial()
 
-    # Resetar estados do jogador e inimigo
-    saude_jogador = 100
-    saude_inimigo = 100
-    mana_jogador = 100
-    mana_inimigo = 100
-    pontos_sabedoria = 0
-    nivel_selecionado = "1° Ano"
-    disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
+# Resetar estados do jogador e inimigo
+saude_jogador = 100
+saude_inimigo = 100
+mana_jogador = 100
+mana_inimigo = 100
+pontos_sabedoria = 0
+nivel_selecionado = "1° Ano"
+disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
 
 # Iniciar a tela inicial
 tela_inicial()
