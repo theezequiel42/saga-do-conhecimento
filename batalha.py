@@ -257,7 +257,6 @@ def selecionar_disciplina():
                     else:
                         selecionar_nivel_e_disciplina()
                         return
-                    batalha()
                     return
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 if ret_voltar_disciplina.collidepoint(evento.pos):
@@ -269,7 +268,6 @@ def selecionar_disciplina():
                             disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
                         else:
                             disciplinas_selecionadas = [disciplinas[i]]
-                        batalha()
                         return
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
@@ -286,10 +284,10 @@ def selecionar_acao():
     desenhar_hud()
     desenhar_personagens()
     desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
-    ret_ataque = desenhar_texto("Pressione 1 para Ataque", font, BRANCO, screen, 20, 60)
-    ret_magia = desenhar_texto("Pressione 2 para Magia", font, BRANCO, screen, 20, 100)
-    ret_defesa = desenhar_texto("Pressione 3 para Defesa", font, BRANCO, screen, 20, 140)
-    ret_fugir = desenhar_texto("Pressione 4 para Fugir", font, BRANCO, screen, 20, 180)
+    ret_ataque = desenhar_texto("Ataque", font, BRANCO, screen, 20, 60)
+    ret_magia = desenhar_texto("Magia", font, BRANCO, screen, 20, 100)
+    ret_defesa = desenhar_texto("Defesa", font, BRANCO, screen, 20, 140)
+    ret_fugir = desenhar_texto("Fugir", font, BRANCO, screen, 20, 180)
     pygame.display.flip()
 
     acao_selecionada = None
@@ -317,7 +315,7 @@ def selecionar_acao():
         desenhar_hud()
         desenhar_personagens()
         desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
-        for i, (texto, ret) in enumerate(zip(["Pressione 1 para Ataque", "Pressione 2 para Magia", "Pressione 3 para Defesa", "Pressione 4 para Fugir"], retangulos_acoes)):
+        for i, (texto, ret) in enumerate(zip(["Ataque", "Magia", "Defesa", "Fugir"], retangulos_acoes)):
             cor = VERDE if i == opcao_selecionada else BRANCO
             desenhar_texto(texto, font, cor, screen, 20, 60 + i * 40)
         pygame.display.flip()
@@ -335,7 +333,7 @@ def apresentar_pergunta(perguntas, tempo_total):
 
     opcoes_rects = []
     for i, opcao in enumerate(pergunta["opcoes"]):
-        ret_opcao = desenhar_texto(f"Pressione {i+1} para {opcao}", font, BRANCO, screen, 20, 120 + i * 40)
+        ret_opcao = desenhar_texto(opcao, font, BRANCO, screen, 20, 120 + i * 40)
         opcoes_rects.append(ret_opcao)
     pygame.display.flip()
     return pergunta, opcoes_rects
@@ -377,7 +375,7 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
         for i, opcao in enumerate(pergunta["opcoes"]):
             cor = VERDE if i == indice_opcao_selecionada else BRANCO
-            desenhar_texto(f"Pressione {i+1} para {opcao}", font, cor, screen, 20, 120 + i * 40)
+            desenhar_texto(opcao, font, cor, screen, 20, 120 + i * 40)
         desenhar_barra_tempo(tempo_restante, tempo_total)
         pygame.display.flip()
 
@@ -509,7 +507,7 @@ def tela_inicial():
                 elif evento.key == pygame.K_RETURN:
                     if opcao_selecionada == 0:
                         jogando = True
-                        selecionar_nivel_e_disciplina()
+                        batalha()
                     elif opcao_selecionada == 1:
                         definir_modo_jogo(True)
                         tela_inicial()
@@ -523,7 +521,7 @@ def tela_inicial():
                     if ret.collidepoint(evento.pos):
                         if i == 0:
                             jogando = True
-                            selecionar_nivel_e_disciplina()
+                            batalha()
                         elif i == 1:
                             definir_modo_jogo(True)
                             tela_inicial()
