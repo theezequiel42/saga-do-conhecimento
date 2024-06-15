@@ -189,6 +189,7 @@ def selecionar_nivel_e_disciplina():
 
     opcao_selecionada = 0
     while True:
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -217,6 +218,11 @@ def selecionar_nivel_e_disciplina():
                         disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
                         selecionar_disciplina()
                         return
+            for i, ret in enumerate(retangulos_niveis):
+                if ret.collidepoint(mouse_pos):
+                    opcao_selecionada = i
+            if ret_voltar_nivel.collidepoint(mouse_pos):
+                opcao_selecionada = len(niveis)
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
         for i, nivel in enumerate(niveis):
@@ -240,6 +246,7 @@ def selecionar_disciplina():
 
     opcao_selecionada = 0
     while True:
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -269,6 +276,11 @@ def selecionar_disciplina():
                         else:
                             disciplinas_selecionadas = [disciplinas[i]]
                         return
+            for i, ret in enumerate(retangulos_disciplinas):
+                if ret.collidepoint(mouse_pos):
+                    opcao_selecionada = i
+            if ret_voltar_disciplina.collidepoint(mouse_pos):
+                opcao_selecionada = len(disciplinas)
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
         for i, disciplina in enumerate(disciplinas):
@@ -295,6 +307,7 @@ def selecionar_acao():
     retangulos_acoes = [ret_ataque, ret_magia, ret_defesa, ret_fugir]
 
     while acao_selecionada is None:
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -310,6 +323,9 @@ def selecionar_acao():
                 for i, ret in enumerate(retangulos_acoes):
                     if ret.collidepoint(evento.pos):
                         acao_selecionada = ["Ataque", "Magia", "Defesa", "Fugir"][i]
+            for i, ret in enumerate(retangulos_acoes):
+                if ret.collidepoint(mouse_pos):
+                    opcao_selecionada = i
 
         screen.blit(background_batalha_img, (0, 0))
         desenhar_hud()
@@ -352,6 +368,7 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
         if tempo_restante <= 0:
             break
 
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -367,6 +384,9 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
                 for i, rect in enumerate(opcoes_rects):
                     if rect.collidepoint(evento.pos):
                         opcao_selecionada = i
+            for i, rect in enumerate(opcoes_rects):
+                if rect.collidepoint(mouse_pos):
+                    indice_opcao_selecionada = i
 
         # Atualizar cronômetro na tela
         screen.blit(background_batalha_img, (0, 0))
@@ -495,6 +515,7 @@ def tela_inicial():
     opcao_selecionada = 0
 
     while not jogando:
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -530,6 +551,9 @@ def tela_inicial():
                         elif i == 3:
                             pygame.quit()
                             exit()
+            for i, ret in enumerate(retangulos_menu):
+                if ret.collidepoint(mouse_pos):
+                    opcao_selecionada = i
         screen.blit(background_menu_img, (0, 0))
         desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
         for i, opcao in enumerate(opcoes_menu):
