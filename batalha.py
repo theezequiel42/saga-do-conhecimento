@@ -24,11 +24,9 @@ AMARELO = (255, 255, 0)
 font = pygame.font.Font(None, 36)
 
 # Carregar e redimensionar imagens
-jogador_img = pygame.image.load("jogador.png").convert_alpha()
 inimigo_img = pygame.image.load("inimigo.png").convert_alpha()
 background_batalha_img = pygame.image.load("background_batalha.png").convert_alpha()
 background_menu_img = pygame.image.load("background_menu.png").convert_alpha()
-jogador_img = pygame.transform.scale(jogador_img, (200, 200))
 inimigo_img = pygame.transform.scale(inimigo_img, (200, 200))
 background_batalha_img = pygame.transform.scale(background_batalha_img, (WIDTH, HEIGHT))
 background_menu_img = pygame.transform.scale(background_menu_img, (WIDTH, HEIGHT))
@@ -59,6 +57,20 @@ def desenhar_texto(texto, fonte, cor, superficie, x, y):
     retangulo_texto = objeto_texto.get_rect(topleft=(x, y))
     superficie.blit(objeto_texto, retangulo_texto)
     return retangulo_texto  # Retornar o retângulo para detecção de clique
+
+# Função para carregar os frames da animação
+def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
+    sprite_sheet = pygame.image.load(caminho).convert_alpha()
+    frames = []
+    for i in range(num_frames):
+        frame = sprite_sheet.subsurface((i * largura_frame, 0, largura_frame, altura_frame))
+        frames.append(pygame.transform.scale(frame, (200, 200)))
+    return frames
+
+# Carregar animação do jogador
+jogador_frames = carregar_animacao("idle-Sheet.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
+jogador_frame_atual = 0
+jogador_frame_tempo = 0
 
 # Perguntas organizadas por nível e disciplina
 perguntas_por_nivel_e_disciplina = {
@@ -129,26 +141,23 @@ def desenhar_hud():
     desenhar_texto(f"Mana: {mana_inimigo}/100", font, BRANCO, screen, 1060, 630)
 
     # Pontos de sabedoria
-    desenhar_texto(f"Pontos de Sabedoria: {pontos_sabedoria}", font, BRANCO, screen, WIDTH - 300, 20)
+    desenhar_texto(f"Pontos de Sabedoria: {pontos_sabedoria}", font, BRANCO, screen, WIDTH - 320, 20)
 
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
+    global jogador_frame_atual, jogador_frame_tempo
+
     jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
     inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
 
-    if dano_jogador:
-        for _ in range(3):  # Piscar 3 vezes
-            screen.blit(jogador_img, jogador_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-            jogador_img_mod = jogador_img.copy()
-            jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(jogador_img_mod, jogador_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-    else:
-        screen.blit(jogador_img, jogador_pos)
+    # Animação do jogador
+    screen.blit(jogador_frames[jogador_frame_atual], jogador_pos)
+    jogador_frame_tempo += 1
+    if jogador_frame_tempo >= 150:  # Ajuste a velocidade da animação (maior valor para mais devagar)
+        jogador_frame_tempo = 0
+        jogador_frame_atual = (jogador_frame_atual + 1) % len(jogador_frames)
 
+    # Desenhar inimigo
     if dano_inimigo:
         for _ in range(3):  # Piscar 3 vezes
             screen.blit(inimigo_img, inimigo_pos)
