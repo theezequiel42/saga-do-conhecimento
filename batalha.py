@@ -484,7 +484,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
             desenhar_hud()
             screen.blit(frame, (100, 300))
             pygame.display.flip()
-            pygame.time.delay(100)
+            pygame.time.delay(150)  # Ajuste a velocidade da animação aqui
 
         saude_inimigo -= dano
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
@@ -616,8 +616,16 @@ def definir_modo_jogo(tela_cheia):
 
 # Função principal da batalha
 def batalha():
-    tocar_musica(musica_batalha)
     global saude_jogador, saude_inimigo, mana_jogador, mana_inimigo, pontos_sabedoria, nivel_selecionado, disciplinas_selecionadas, batalha_ativa
+
+    # Reiniciar variáveis de estado
+    saude_jogador = 100
+    saude_inimigo = 100
+    mana_jogador = 100
+    mana_inimigo = 100
+    pontos_sabedoria = 0
+
+    tocar_musica(musica_batalha)
 
     perguntas = []
     for disciplina in disciplinas_selecionadas:
@@ -667,16 +675,6 @@ def batalha():
                 pygame.time.delay(3000)
                 tela_inicial()
 
-# Resetar estados do jogador e inimigo
-saude_jogador = 100
-saude_inimigo = 100
-mana_jogador = 100
-mana_inimigo = 100
-pontos_sabedoria = 0
-nivel_selecionado = "1° Ano"
-disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_selecionado].keys())
-
 # Iniciar a tela inicial
 tela_inicial()
 pygame.quit()
-
