@@ -183,30 +183,6 @@ def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
         inimigo_frame_tempo = 0
         inimigo_frame_atual = (inimigo_frame_atual + 1) % len(inimigo_frames)
 
-    # Desenhar dano no jogador
-    if dano_jogador:
-        for _ in range(3):  # Piscar 3 vezes
-            screen.blit(frames[jogador_frame_atual], jogador_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-            jogador_img_mod = frames[jogador_frame_atual].copy()
-            jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(jogador_img_mod, jogador_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-
-    # Desenhar dano no inimigo
-    if dano_inimigo:
-        for _ in range(3):  # Piscar 3 vezes
-            screen.blit(inimigo_frames[inimigo_frame_atual], inimigo_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-            inimigo_img_mod = inimigo_frames[inimigo_frame_atual].copy()
-            inimigo_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-            screen.blit(inimigo_img_mod, inimigo_pos)
-            pygame.display.flip()
-            pygame.time.delay(100)
-
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
     largura_barra = int((tempo_restante / tempo_total) * 400)
@@ -496,17 +472,31 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
             else:
                 mensagem = "Resposta errada! Nenhum dano causado!"
 
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud()
+        desenhar_personagens()
+        pygame.display.flip()
+        pygame.time.delay(500)
+        
+        # Mostrar a animação de ataque
+        for frame in jogador_attack_frames:
+            screen.blit(background_batalha_img, (0, 0))
+            desenhar_hud()
+            screen.blit(frame, (100, 300))
+            pygame.display.flip()
+            pygame.time.delay(100)
+
         saude_inimigo -= dano
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
         dano_inimigo = True if dano > 0 else False
 
-    screen.blit(background_batalha_img, (0, 0))
-    desenhar_hud()
-    desenhar_personagens(dano_inimigo=dano_inimigo)
-    desenhar_texto(mensagem, font, BRANCO, screen, 20, 20)
-    desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", font, BRANCO, screen, 20, 60)
-    pygame.display.flip()
-    pygame.time.delay(3000)
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud()
+        desenhar_personagens(dano_inimigo=dano_inimigo)
+        desenhar_texto(mensagem, font, BRANCO, screen, 20, 20)
+        desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", font, BRANCO, screen, 20, 60)
+        pygame.display.flip()
+        pygame.time.delay(3000)
 
 # Função para turno do inimigo
 def turno_inimigo():
@@ -689,3 +679,4 @@ disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[nivel_seleciona
 # Iniciar a tela inicial
 tela_inicial()
 pygame.quit()
+
