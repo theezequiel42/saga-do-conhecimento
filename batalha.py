@@ -69,9 +69,11 @@ def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
     return frames
 
 # Carregar animação do jogador
-jogador_frames = carregar_animacao("idle-Sheet.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
+jogador_idle_frames = carregar_animacao("idle-Sheet.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
+jogador_attack_frames = carregar_animacao("Attack-01-Sheet.png", 64, 64, 8)
 jogador_frame_atual = 0
 jogador_frame_tempo = 0
+jogador_acao = "idle"
 
 # Carregar animação do inimigo
 inimigo_frames = carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
@@ -151,33 +153,43 @@ def desenhar_hud():
 
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
-    global jogador_frame_atual, jogador_frame_tempo
+    global jogador_frame_atual, jogador_frame_tempo, jogador_acao
     global inimigo_frame_atual, inimigo_frame_tempo
 
     jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
     inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
 
     # Animação do jogador
-    screen.blit(jogador_frames[jogador_frame_atual], jogador_pos)
+    if jogador_acao == "idle":
+        frames = jogador_idle_frames
+        frame_delay = 300  # Ajuste a velocidade da animação de inativo (maior valor para mais devagar)
+    elif jogador_acao == "attack":
+        frames = jogador_attack_frames
+        frame_delay = 200  # Ajuste a velocidade da animação de ataque (maior valor para mais devagar)
+
+    screen.blit(frames[jogador_frame_atual], jogador_pos)
     jogador_frame_tempo += 1
-    if jogador_frame_tempo >= 150:  # Ajuste a velocidade da animação (maior valor para mais devagar)
+    if jogador_frame_tempo >= frame_delay:
         jogador_frame_tempo = 0
-        jogador_frame_atual = (jogador_frame_atual + 1) % len(jogador_frames)
+        jogador_frame_atual = (jogador_frame_atual + 1) % len(frames)
+        if jogador_acao == "attack" and jogador_frame_atual == len(frames) - 1:
+            jogador_acao = "idle"
+            jogador_frame_atual = 0
 
     # Animação do inimigo
     screen.blit(inimigo_frames[inimigo_frame_atual], inimigo_pos)
     inimigo_frame_tempo += 1
-    if inimigo_frame_tempo >= 150:  # Ajuste a velocidade da animação (maior valor para mais devagar)
+    if inimigo_frame_tempo >= 300:  # Ajuste a velocidade da animação (maior valor para mais devagar)
         inimigo_frame_tempo = 0
         inimigo_frame_atual = (inimigo_frame_atual + 1) % len(inimigo_frames)
 
     # Desenhar dano no jogador
     if dano_jogador:
         for _ in range(3):  # Piscar 3 vezes
-            screen.blit(jogador_frames[jogador_frame_atual], jogador_pos)
+            screen.blit(frames[jogador_frame_atual], jogador_pos)
             pygame.display.flip()
             pygame.time.delay(100)
-            jogador_img_mod = jogador_frames[jogador_frame_atual].copy()
+            jogador_img_mod = frames[jogador_frame_atual].copy()
             jogador_img_mod.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
             screen.blit(jogador_img_mod, jogador_pos)
             pygame.display.flip()
@@ -253,10 +265,12 @@ def selecionar_nivel_e_disciplina():
         desenhar_texto("Selecione o Nível:", font, BRANCO, screen, 20, 20)
         for i, nivel in enumerate(niveis):
             cor = PRETO if i == opcao_selecionada else BRANCO
-            pygame.draw.rect(screen, AMARELO, retangulos_niveis[i]) if i == opcao_selecionada else None
+            if i == opcao_selecionada:
+                pygame.draw.rect(screen, AMARELO, retangulos_niveis[i])
             desenhar_texto(f"{i+1}. {nivel}", font, cor, screen, 20, 60 + i * 40)
         cor = PRETO if opcao_selecionada == len(niveis) else BRANCO
-        pygame.draw.rect(screen, AMARELO, ret_voltar_nivel) if opcao_selecionada == len(niveis) else None
+        if opcao_selecionada == len(niveis):
+            pygame.draw.rect(screen, AMARELO, ret_voltar_nivel)
         desenhar_texto("Voltar ao Início", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
 
@@ -313,10 +327,12 @@ def selecionar_disciplina():
         desenhar_texto("Selecione a Disciplina:", font, BRANCO, screen, 20, 20)
         for i, disciplina in enumerate(disciplinas):
             cor = PRETO if i == opcao_selecionada else BRANCO
-            pygame.draw.rect(screen, AMARELO, retangulos_disciplinas[i]) if i == opcao_selecionada else None
+            if i == opcao_selecionada:
+                pygame.draw.rect(screen, AMARELO, retangulos_disciplinas[i])
             desenhar_texto(f"{i+1}. {disciplina}", font, cor, screen, 20, 60 + i * 40)
         cor = PRETO if opcao_selecionada == len(disciplinas) else BRANCO
-        pygame.draw.rect(screen, AMARELO, ret_voltar_disciplina) if opcao_selecionada == len(disciplinas) else None
+        if opcao_selecionada == len(disciplinas):
+            pygame.draw.rect(screen, AMARELO, ret_voltar_disciplina)
         desenhar_texto("Voltar ao Nível", font, cor, screen, WIDTH - 200, HEIGHT - 50)
         pygame.display.flip()
 
@@ -363,7 +379,8 @@ def selecionar_acao():
         desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
         for i, (texto, ret) in enumerate(zip(["Ataque", "Magia", "Defesa", "Fugir"], retangulos_acoes)):
             cor = PRETO if i == opcao_selecionada else BRANCO
-            pygame.draw.rect(screen, AMARELO, ret) if i == opcao_selecionada else None
+            if i == opcao_selecionada:
+                pygame.draw.rect(screen, AMARELO, ret)
             desenhar_texto(texto, font, cor, screen, 20, 60 + i * 40)
         pygame.display.flip()
 
@@ -426,7 +443,8 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
         desenhar_texto(pergunta["pergunta"], font, BRANCO, screen, 20, 20)
         for i, opcao in enumerate(pergunta["opcoes"]):
             cor = PRETO if i == indice_opcao_selecionada else BRANCO
-            pygame.draw.rect(screen, CINZA_CLARO, opcoes_rects[i]) if i == indice_opcao_selecionada else None
+            if i == indice_opcao_selecionada:
+                pygame.draw.rect(screen, CINZA_CLARO, opcoes_rects[i])
             desenhar_texto(opcao, font, cor, screen, 20, 120 + i * 30)  # Distância entre opções de 30 pixels
         desenhar_barra_tempo(tempo_restante, tempo_total)
         pygame.display.flip()
@@ -442,7 +460,7 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
 
 # Função para executar ação
 def executar_acao(acao, resposta_correta, tempo_resposta):
-    global saude_inimigo, defendendo, mana_jogador, batalha_ativa, pontos_sabedoria
+    global saude_inimigo, defendendo, mana_jogador, batalha_ativa, pontos_sabedoria, jogador_acao
     dano = 0
     mensagem = ""
     dano_inimigo = False
@@ -457,6 +475,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                     dano = 20
                 else:
                     dano = 10
+                jogador_acao = "attack"
             elif acao == "Magia":
                 if mana_jogador >= 10:
                     mana_jogador -= 10
@@ -590,7 +609,8 @@ def tela_inicial():
         desenhar_texto("A Saga do Conhecimento", font, BRANCO, screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
         for i, opcao in enumerate(opcoes_menu):
             cor = PRETO if i == opcao_selecionada else BRANCO
-            pygame.draw.rect(screen, AMARELO, retangulos_menu[i]) if i == opcao_selecionada else None
+            if i == opcao_selecionada:
+                pygame.draw.rect(screen, AMARELO, retangulos_menu[i])
             desenhar_texto(opcao, font, cor, screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50)
         pygame.display.flip()
 
