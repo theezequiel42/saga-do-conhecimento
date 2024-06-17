@@ -321,12 +321,13 @@ def selecionar_acao():
     ret_ataque = desenhar_texto("Ataque", font, BRANCO, screen, 20, 60)
     ret_magia = desenhar_texto("Magia", font, BRANCO, screen, 20, 100)
     ret_defesa = desenhar_texto("Defesa", font, BRANCO, screen, 20, 140)
-    ret_fugir = desenhar_texto("Fugir", font, BRANCO, screen, 20, 180)
+    ret_curar = desenhar_texto("Curar", font, BRANCO, screen, 20, 180)
+    ret_fugir = desenhar_texto("Fugir", font, BRANCO, screen, 20, 220)
     pygame.display.flip()
 
     acao_selecionada = None
     opcao_selecionada = 0
-    retangulos_acoes = [ret_ataque, ret_magia, ret_defesa, ret_fugir]
+    retangulos_acoes = [ret_ataque, ret_magia, ret_defesa, ret_curar, ret_fugir]
 
     while acao_selecionada is None:
         mouse_pos = pygame.mouse.get_pos()
@@ -340,11 +341,11 @@ def selecionar_acao():
                 elif evento.key == pygame.K_UP:
                     opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_acoes)
                 elif evento.key == pygame.K_RETURN:
-                    acao_selecionada = ["Ataque", "Magia", "Defesa", "Fugir"][opcao_selecionada]
+                    acao_selecionada = ["Ataque", "Magia", "Defesa", "Curar", "Fugir"][opcao_selecionada]
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 for i, ret in enumerate(retangulos_acoes):
                     if ret.collidepoint(evento.pos):
-                        acao_selecionada = ["Ataque", "Magia", "Defesa", "Fugir"][i]
+                        acao_selecionada = ["Ataque", "Magia", "Defesa", "Curar", "Fugir"][i]
             for i, ret in enumerate(retangulos_acoes):
                 if ret.collidepoint(mouse_pos):
                     opcao_selecionada = i
@@ -353,7 +354,7 @@ def selecionar_acao():
         desenhar_hud()
         desenhar_personagens()
         desenhar_texto("Escolha sua ação:", font, BRANCO, screen, 20, 20)
-        for i, (texto, ret) in enumerate(zip(["Ataque", "Magia", "Defesa", "Fugir"], retangulos_acoes)):
+        for i, (texto, ret) in enumerate(zip(["Ataque", "Magia", "Defesa", "Curar", "Fugir"], retangulos_acoes)):
             cor = PRETO if i == opcao_selecionada else BRANCO
             if i == opcao_selecionada:
                 pygame.draw.rect(screen, AMARELO, ret)
@@ -361,6 +362,7 @@ def selecionar_acao():
         pygame.display.flip()
 
     return acao_selecionada
+
 
 # Função para apresentar pergunta
 def apresentar_pergunta(perguntas, tempo_total):
@@ -436,10 +438,11 @@ def avaliar_resposta(pergunta, opcoes_rects, tempo_total):
 
 # Função para executar ação
 def executar_acao(acao, resposta_correta, tempo_resposta):
-    global saude_inimigo, defendendo, mana_jogador, batalha_ativa, pontos_sabedoria, jogador_acao
+    global saude_jogador, saude_inimigo, defendendo, mana_jogador, batalha_ativa, pontos_sabedoria, jogador_acao
     dano = 0
     mensagem = ""
     dano_inimigo = False
+    cura = 0
 
     if acao == "Fugir":
         batalha_ativa = False
@@ -464,6 +467,17 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
             elif acao == "Defesa":
                 defendendo = True
                 mensagem = "Você se preparou para a defesa!"
+            elif acao == "Curar":
+                if mana_jogador >= 15:
+                    mana_jogador -= 15
+                    if tempo_resposta <= 5:
+                        cura = 20
+                    else:
+                        cura = 10
+                    saude_jogador = min(saude_jogador + cura, 100)  # Saúde máxima é 100
+                    mensagem = f"Você se curou em {cura} pontos!"
+                else:
+                    mensagem = "Mana insuficiente!"
             pontos_sabedoria += 10
         else:
             if acao == "Defesa":
@@ -478,13 +492,14 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
         pygame.display.flip()
         pygame.time.delay(500)
         
-        # Mostrar a animação de ataque
-        for frame in jogador_attack_frames:
-            screen.blit(background_batalha_img, (0, 0))
-            desenhar_hud()
-            screen.blit(frame, (100, 300))
-            pygame.display.flip()
-            pygame.time.delay(150)  # Ajuste a velocidade da animação aqui
+        if acao == "Ataque":
+            # Mostrar a animação de ataque
+            for frame in jogador_attack_frames:
+                screen.blit(background_batalha_img, (0, 0))
+                desenhar_hud()
+                screen.blit(frame, (100, 300))
+                pygame.display.flip()
+                pygame.time.delay(150)  # Ajuste a velocidade da animação aqui
 
         saude_inimigo -= dano
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
