@@ -77,8 +77,14 @@ jogador_acao = "idle"
 
 # Carregar animação do inimigo
 inimigo_frames = carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4)  # Ajuste a largura, altura e o número de frames conforme necessário
+inimigo_attack_frames = carregar_animacao("Attack-01-Sheet-inimigo.png", 64, 64, 8)
 inimigo_frame_atual = 0
 inimigo_frame_tempo = 0
+inimigo_acao = "idle"
+
+# Verificar se os frames foram carregados corretamente
+print(f"Frames do inimigo carregados: {len(inimigo_frames)}")
+print(f"Frames de ataque do inimigo carregados: {len(inimigo_attack_frames)}")
 
 # Perguntas organizadas por nível e disciplina
 perguntas_por_nivel_e_disciplina = {
@@ -154,7 +160,7 @@ def desenhar_hud():
 # Função para desenhar personagens
 def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
     global jogador_frame_atual, jogador_frame_tempo, jogador_acao
-    global inimigo_frame_atual, inimigo_frame_tempo
+    global inimigo_frame_atual, inimigo_frame_tempo, inimigo_acao
 
     jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
     inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
@@ -177,11 +183,22 @@ def desenhar_personagens(dano_jogador=False, dano_inimigo=False):
             jogador_frame_atual = 0
 
     # Animação do inimigo
-    screen.blit(inimigo_frames[inimigo_frame_atual], inimigo_pos)
-    inimigo_frame_tempo += 1
-    if inimigo_frame_tempo >= 300:  # Ajuste a velocidade da animação (maior valor para mais devagar)
-        inimigo_frame_tempo = 0
-        inimigo_frame_atual = (inimigo_frame_atual + 1) % len(inimigo_frames)
+    if inimigo_acao == "idle":
+        frames = inimigo_frames
+        frame_delay = 300  # Ajuste a velocidade da animação de inativo (maior valor para mais devagar)
+    elif inimigo_acao == "attack":
+        frames = inimigo_attack_frames
+        frame_delay = 200  # Ajuste a velocidade da animação de ataque (maior valor para mais devagar)
+
+    if frames:
+        screen.blit(frames[inimigo_frame_atual], inimigo_pos)
+        inimigo_frame_tempo += 1
+        if inimigo_frame_tempo >= frame_delay:
+            inimigo_frame_tempo = 0
+            inimigo_frame_atual = (inimigo_frame_atual + 1) % len(frames)
+            if inimigo_acao == "attack" and inimigo_frame_atual == len(frames) - 1:
+                inimigo_acao = "idle"
+                inimigo_frame_atual = 0
 
 # Função para desenhar barra de tempo
 def desenhar_barra_tempo(tempo_restante, tempo_total):
@@ -515,7 +532,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
 
 # Função para turno do inimigo
 def turno_inimigo():
-    global saude_jogador, defendendo, mana_inimigo
+    global saude_jogador, defendendo, mana_inimigo, inimigo_acao
     dano = random.randint(5, 15)
     tipo_acao = random.choice(["Ataque", "Magia", "Defesa"])
     dano_jogador = False
@@ -538,6 +555,18 @@ def turno_inimigo():
 
     saude_jogador -= dano
     dano_jogador = True if dano > 0 else False
+
+    inimigo_acao = "attack"
+
+    # Mostrar a animação de ataque do inimigo
+    for frame in inimigo_attack_frames:
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud()
+        screen.blit(frame, (980, 300))
+        pygame.display.flip()
+        pygame.time.delay(150)  # Ajuste a velocidade da animação aqui
+
+    inimigo_acao = "idle"
 
     screen.blit(background_batalha_img, (0, 0))
     desenhar_hud()
