@@ -70,10 +70,10 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jo
     # Animação do jogador
     if derrota_jogador:
         frames = jogador_animacoes["derrota"]
-        frame_delay = 200
+        frame_delay = 200 # velocidade da animação , quanto menor mais rapido
     elif estado_jogo["jogador_acao"] == "idle":
         frames = jogador_animacoes["idle"]
-        frame_delay = 300
+        frame_delay = 50
     elif estado_jogo["jogador_acao"] == "attack":
         frames = jogador_animacoes["attack"]
         frame_delay = 200
@@ -90,10 +90,10 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jo
     # Animação do inimigo
     if derrota_inimigo:
         frames = inimigo_animacoes["derrota"]
-        frame_delay = 200
+        frame_delay = 200 # velocidade da animação, quanto menor mais rapido
     elif estado_jogo["inimigo_acao"] == "idle":
         frames = inimigo_animacoes["idle"]
-        frame_delay = 300
+        frame_delay = 50
     elif estado_jogo["inimigo_acao"] == "attack":
         frames = inimigo_animacoes["attack"]
         frame_delay = 200
