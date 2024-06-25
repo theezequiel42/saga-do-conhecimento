@@ -69,7 +69,8 @@ def batalha():
             tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
             if resultado == "Vitória":
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
-            jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
@@ -85,7 +86,8 @@ def batalha():
             tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
             if resultado == "Vitória":
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
-            jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
