@@ -1,6 +1,4 @@
-# Configurações do jogo e constantes
-
-# Tamanho da tela
+# Configurações gerais
 WIDTH, HEIGHT = 1280, 720
 
 # Cores
@@ -19,6 +17,7 @@ COLORS = {
 MUSICAS = {
     "menu": "musica_menu.mp3",
     "batalha": "musica_batalha.mp3",
+    "historia": "musica_historia.mp3",
     "vitoria": "som_vitoria.mp3",
     "derrota": "som_derrota.mp3"
 }

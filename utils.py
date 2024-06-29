@@ -64,15 +64,18 @@ def desenhar_hud(screen, estado_jogo):
     desenhar_texto(f"Pontos de Sabedoria: {estado_jogo['pontos_sabedoria']}", None, COLORS["BRANCO"], screen, WIDTH - 320, 20)
 
 def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jogo, dano_jogador=False, dano_inimigo=False, derrota_jogador=False, derrota_inimigo=False):
-    jogador_pos = (100, 300)
-    inimigo_pos = (980, 300)
+    jogador_pos = (100, HEIGHT - 320)
+    inimigo_pos = (980, HEIGHT - 320)
 
     # Animação do jogador
     if derrota_jogador:
         frames = jogador_animacoes["derrota"]
-        frame_delay = 200 # velocidade da animação , quanto menor mais rapido
+        frame_delay = 200
     elif estado_jogo["jogador_acao"] == "idle":
         frames = jogador_animacoes["idle"]
+        frame_delay = 50
+    elif estado_jogo["jogador_acao"] == "run":
+        frames = jogador_animacoes["run"]
         frame_delay = 50
     elif estado_jogo["jogador_acao"] == "attack":
         frames = jogador_animacoes["attack"]
@@ -90,7 +93,7 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jo
     # Animação do inimigo
     if derrota_inimigo:
         frames = inimigo_animacoes["derrota"]
-        frame_delay = 200 # velocidade da animação, quanto menor mais rapido
+        frame_delay = 200
     elif estado_jogo["inimigo_acao"] == "idle":
         frames = inimigo_animacoes["idle"]
         frame_delay = 50
