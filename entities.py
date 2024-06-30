@@ -1,6 +1,6 @@
 import pygame
 from config import COLORS, WIDTH, HEIGHT
-from utils import carregar_animacao, desenhar_texto, desenhar_personagens, tocar_som, parar_musica
+from utils import carregar_animacao, desenhar_texto, desenhar_hud, desenhar_personagens, desenhar_barra_tempo, tocar_som, parar_musica
 
 class Jogador:
     def __init__(self):
@@ -45,9 +45,10 @@ class Jogador:
             "inimigo_frame_tempo": 0
         })
 
-    def selecionar_acao(self, screen, background_batalha_img):
+    def selecionar_acao(self, screen, background_batalha_img, inimigo):
         acoes = ["Ataque", "Magia", "Defesa", "Curar", "Fugir"]
         opcao_selecionada = 0
+        opcoes_rects = []
 
         while True:
             mouse_pos = pygame.mouse.get_pos()
@@ -63,22 +64,28 @@ class Jogador:
                     elif evento.key == pygame.K_RETURN:
                         return acoes[opcao_selecionada]
                 if evento.type == pygame.MOUSEBUTTONDOWN:
-                    for i, ret in enumerate(opcoes_rects):
-                        if ret.collidepoint(evento.pos):
+                    for i, rect in enumerate(opcoes_rects):
+                        if rect.collidepoint(evento.pos):
                             return acoes[i]
 
             screen.blit(background_batalha_img, (0, 0))
             desenhar_hud(screen, self.estado)
-            desenhar_personagens(screen, self.jogador_animacoes, {}, self.estado)
+            desenhar_personagens(screen, self.jogador_animacoes, inimigo.inimigo_animacoes, self.estado)
             desenhar_texto("Escolha sua ação:", None, COLORS["BRANCO"], screen, 20, 20)
+
             opcoes_rects = []
             for i, acao in enumerate(acoes):
                 cor = COLORS["PRETO"] if i == opcao_selecionada else COLORS["BRANCO"]
-                if i == opcao_selecionada:
-                    ret = desenhar_texto(f"> {acao}", None, cor, screen, 20, 60 + i * 40)
-                else:
-                    ret = desenhar_texto(acao, None, cor, screen, 20, 60 + i * 40)
+                ret = desenhar_texto(acao, None, cor, screen, 20, 60 + i * 40)
                 opcoes_rects.append(ret)
+                if ret.collidepoint(mouse_pos):
+                    opcao_selecionada = i
+
+            for i, rect in enumerate(opcoes_rects):
+                if rect.collidepoint(mouse_pos):
+                    pygame.draw.rect(screen, COLORS["AMARELO"], rect)
+                    desenhar_texto(acoes[i], None, COLORS["PRETO"], screen, rect.x, rect.y)
+
             pygame.display.flip()
 
     def apresentar_pergunta(self, perguntas, screen, background_img):
@@ -183,7 +190,7 @@ class Jogador:
                 for frame in self.jogador_animacoes["attack"]:
                     screen.blit(background_img, (0, 0))
                     desenhar_hud(screen, self.estado)
-                    screen.blit(frame, (100, HEIGHT - 320))
+                    screen.blit(frame, (100, HEIGHT - 400))
                     pygame.display.flip()
                     pygame.time.delay(150)
 
@@ -260,7 +267,7 @@ class Inimigo:
         for frame in self.inimigo_animacoes["attack"]:
             screen.blit(background_img, (0, 0))
             desenhar_hud(screen, jogador.estado)
-            screen.blit(frame, (980, HEIGHT - 320))
+            screen.blit(frame, (980, HEIGHT - 400))
             pygame.display.flip()
             pygame.time.delay(150)
 

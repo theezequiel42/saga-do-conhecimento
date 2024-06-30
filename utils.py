@@ -1,6 +1,6 @@
 import pygame
 import os
-from config import COLORS, WIDTH
+from config import COLORS, WIDTH, HEIGHT
 
 def carregar_imagem(nome, width, height):
     """Carrega e redimensiona uma imagem."""
@@ -64,8 +64,8 @@ def desenhar_hud(screen, estado_jogo):
     desenhar_texto(f"Pontos de Sabedoria: {estado_jogo['pontos_sabedoria']}", None, COLORS["BRANCO"], screen, WIDTH - 320, 20)
 
 def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jogo, dano_jogador=False, dano_inimigo=False, derrota_jogador=False, derrota_inimigo=False):
-    jogador_pos = (100, HEIGHT - 320)
-    inimigo_pos = (980, HEIGHT - 320)
+    jogador_pos = (100, HEIGHT - 400)
+    inimigo_pos = (980, HEIGHT - 400)
 
     # Animação do jogador
     if derrota_jogador:

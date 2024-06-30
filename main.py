@@ -32,12 +32,6 @@ background_historia_img = carregar_imagem("background_historia.png", WIDTH, HEIG
 jogador = Jogador()
 inimigo = Inimigo()
 
-# Definir objetos interativos
-objetos_interativos = [
-    pygame.Rect(500, HEIGHT - 200, 50, 50),  # Exemplo de objeto interativo
-    pygame.Rect(800, HEIGHT - 300, 50, 50)   # Outro exemplo de objeto interativo
-]
-
 # Função principal da batalha
 def batalha():
     # Configurações iniciais
@@ -54,7 +48,7 @@ def batalha():
     # Loop principal da batalha
     while jogador.estado["batalha_ativa"]:
         # Selecionar ação do jogador
-        acao = jogador.selecionar_acao(screen, background_batalha_img)
+        acao = jogador.selecionar_acao(screen, background_batalha_img, inimigo)
 
         if acao == "Fugir":
             resultado = jogador.executar_acao(acao, False, 0, inimigo, screen, background_batalha_img)
@@ -120,12 +114,23 @@ def fase_zero():
         "jogador_frame_tempo": 0
     })
 
+    # Desenhar opção de sair antes do loop principal
+    ret_sair = desenhar_texto("Sair", None, COLORS["BRANCO"], screen, WIDTH - 100, HEIGHT - 50)
+
     # Loop principal da fase zero
     while running:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    running = False
+                    tela_inicial()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_sair.collidepoint(pygame.mouse.get_pos()):
+                    running = False
+                    tela_inicial()
 
         # Controle de movimento do jogador
         keys = pygame.key.get_pressed()
@@ -150,21 +155,17 @@ def fase_zero():
             jogador_vel_y = 0
             jogador_no_chao = True
 
-        # Detecção de colisão com objetos interativos
-        jogador_rect = pygame.Rect(jogador_pos[0], jogador_pos[1], 50, 100)  # Ajuste o tamanho do rect conforme necessário
-        for obj in objetos_interativos:
-            if jogador_rect.colliderect(obj):
-                # Apresentar uma pergunta quando colidir com um objeto interativo
-                perguntas = perguntas_por_nivel_e_disciplina[jogador.estado["nivel_selecionado"]]["Matemática"]
-                pergunta, opcoes_rects = jogador.apresentar_pergunta(perguntas, screen, background_historia_img)
-                resposta_correta, tempo_resposta = jogador.avaliar_resposta(pergunta, opcoes_rects, screen, background_historia_img)
-                # Executar uma ação com base na resposta (aqui pode ser expandido conforme necessário)
-
         # Desenhar a fase
         screen.blit(background_historia_img, (0, 0))
-        for obj in objetos_interativos:
-            pygame.draw.rect(screen, COLORS["AMARELO"], obj)  # Desenhar objetos interativos
         screen.blit(jogador.jogador_animacoes[jogador.estado["jogador_acao"]][jogador.estado["jogador_frame_atual"]], jogador_pos)
+
+        # Desenhar opção de sair
+        mouse_pos = pygame.mouse.get_pos()
+        cor = COLORS["PRETO"] if ret_sair.collidepoint(mouse_pos) else COLORS["BRANCO"]
+        if ret_sair.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, COLORS["AMARELO"], ret_sair)
+        ret_sair = desenhar_texto("Sair", None, cor, screen, WIDTH - 100, HEIGHT - 50)
+
         pygame.display.flip()
         clock.tick(60)  # Limitar a 60 quadros por segundo
 
@@ -177,7 +178,6 @@ def modo_historia():
 def tela_inicial():
     tocar_musica(MUSICAS["menu"])
     screen.blit(background_menu_img, (0, 0))
-    desenhar_texto("A Saga do Conhecimento", None, COLORS["BRANCO"], screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
     opcoes_menu = ["Batalhar", "Modo História", "Tela Cheia", "Opções", "Sair"]
     retangulos_menu = [desenhar_texto(opcao, None, COLORS["BRANCO"], screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50) for i, opcao in enumerate(opcoes_menu)]
     pygame.display.flip()
@@ -228,16 +228,16 @@ def tela_inicial():
                         elif i == 4:
                             pygame.quit()
                             exit()
-            # Atualizar a opção selecionada com base na posição do mouse
-            for i, ret in enumerate(retangulos_menu):
-                if ret.collidepoint(mouse_pos):
-                    opcao_selecionada = i
+
+        for i, ret in enumerate(retangulos_menu):
+            if ret.collidepoint(mouse_pos):
+                opcao_selecionada = i
+
         screen.blit(background_menu_img, (0, 0))
-        desenhar_texto("A Saga do Conhecimento", None, COLORS["BRANCO"], screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
         for i, opcao in enumerate(opcoes_menu):
             cor = COLORS["PRETO"] if i == opcao_selecionada else COLORS["BRANCO"]
             if i == opcao_selecionada:
-                pygame.draw.rect(screen, COLORS["AMARELO"], ret)
+                pygame.draw.rect(screen, COLORS["AMARELO"], retangulos_menu[i])
             desenhar_texto(opcao, None, cor, screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50)
         pygame.display.flip()
 

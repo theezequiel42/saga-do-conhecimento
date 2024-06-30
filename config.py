@@ -21,3 +21,5 @@ MUSICAS = {
     "vitoria": "som_vitoria.mp3",
     "derrota": "som_derrota.mp3"
 }
+
+# altura_chao = HEIGHT - 400  # Ajuste esta variável para regular a altura do chão
