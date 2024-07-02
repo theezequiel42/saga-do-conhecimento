@@ -1,112 +1,95 @@
 import pygame
-import os
-from config import COLORS, WIDTH
+from config import WIDTH, HEIGHT
 
-def carregar_imagem(nome, width, height):
-    """Carrega e redimensiona uma imagem."""
+def carregar_imagem(nome, largura, altura):
     img = pygame.image.load(nome).convert_alpha()
-    return pygame.transform.scale(img, (width, height))
+    return pygame.transform.scale(img, (largura, altura))
 
-def tocar_musica(musica, loop=-1):
-    """Toca uma música."""
-    pygame.mixer.music.load(musica)
-    pygame.mixer.music.play(loop)
-
-def parar_musica():
-    """Para a música atual."""
-    pygame.mixer.music.stop()
-
-def tocar_som(som):
-    """Toca um efeito sonoro."""
-    efeito = pygame.mixer.Sound(som)
-    efeito.play()
-
-def desenhar_texto(texto, fonte, cor, superficie, x, y):
-    """Desenha um texto na tela."""
+def desenhar_texto(texto, fonte, cor, surface, x, y):
     if fonte is None:
         fonte = pygame.font.Font(None, 36)
-    objeto_texto = fonte.render(texto, True, cor)
-    retangulo_texto = objeto_texto.get_rect(topleft=(x, y))
-    superficie.blit(objeto_texto, retangulo_texto)
-    return retangulo_texto  # Retornar o retângulo para detecção de clique
+    text_surface = fonte.render(texto, True, cor)
+    surface.blit(text_surface, (x, y))
+    return text_surface.get_rect(topleft=(x, y))
 
-def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
-    """Carrega os frames de uma animação a partir de um sprite sheet."""
-    if not os.path.isfile(caminho):
-        raise FileNotFoundError(f"O arquivo '{caminho}' não foi encontrado no diretório '{os.getcwd()}'.")
-    sprite_sheet = pygame.image.load(caminho).convert_alpha()
-    frames = [pygame.transform.scale(sprite_sheet.subsurface((i * largura_frame, 0, largura_frame, altura_frame)), (200, 200)) for i in range(num_frames)]
+def carregar_animacao(nome_base, largura, altura, n_frames, individual_frames=False, scale_width=None, scale_height=None):
+    frames = []
+    if individual_frames:
+        for i in range(n_frames):
+            nome = f"{nome_base}-{i:02d}.png"
+            frame = carregar_imagem(nome, largura, altura)
+            if scale_width and scale_height:
+                frame = pygame.transform.scale(frame, (scale_width, scale_height))
+            frames.append(frame)
+    else:
+        sprite_sheet = carregar_imagem(nome_base, largura * n_frames, altura)
+        for i in range(n_frames):
+            frame = sprite_sheet.subsurface(pygame.Rect(i * largura, 0, largura, altura))
+            if scale_width and scale_height:
+                frame = pygame.transform.scale(frame, (scale_width, scale_height))
+            frames.append(frame)
     return frames
 
-def desenhar_hud(screen, estado_jogo):
-    """Desenha a HUD na tela."""
-    # Barra de saúde do jogador
-    pygame.draw.rect(screen, COLORS["VERMELHO"], (20, 600, 200, 20))
-    pygame.draw.rect(screen, COLORS["VERDE"], (20, 600, 2 * estado_jogo["saude_jogador"], 20))
-    desenhar_texto(f"Jogador: {estado_jogo['saude_jogador']}/100", None, COLORS["BRANCO"], screen, 20, 570)
+def desenhar_hud(surface, estado):
+    fonte = pygame.font.Font(None, 36)
+    cor = (255, 255, 255)
+    
+    # Desenhar barras de saúde e mana do jogador no canto inferior esquerdo
+    largura_barra = 200
+    altura_barra = 20
 
-    # Barra de saúde do inimigo
-    pygame.draw.rect(screen, COLORS["VERMELHO"], (1060, 600, 200, 20))
-    pygame.draw.rect(screen, COLORS["VERDE"], (1060, 600, 2 * estado_jogo["saude_inimigo"], 20))
-    desenhar_texto(f"Inimigo: {estado_jogo['saude_inimigo']}/100", None, COLORS["BRANCO"], screen, 1060, 570)
+    saude_jogador_texto = f"Saúde: {estado['saude_jogador']}"
+    mana_jogador_texto = f"Mana: {estado['mana_jogador']}"
+    desenhar_texto(saude_jogador_texto, fonte, cor, surface, 20, HEIGHT - 80)
+    desenhar_texto(mana_jogador_texto, fonte, cor, surface, 20, HEIGHT - 40)
 
-    # Barra de mana do jogador
-    pygame.draw.rect(screen, COLORS["CINZA"], (20, 660, 200, 20))
-    pygame.draw.rect(screen, COLORS["AZUL"], (20, 660, 2 * estado_jogo["mana_jogador"], 20))
-    desenhar_texto(f"Mana: {estado_jogo['mana_jogador']}/100", None, COLORS["BRANCO"], screen, 20, 630)
+    pygame.draw.rect(surface, (0, 0, 0), (20, HEIGHT - 60, largura_barra, altura_barra))
+    pygame.draw.rect(surface, (0, 255, 0), (20, HEIGHT - 60, largura_barra * (estado['saude_jogador'] / 100), altura_barra))
+    pygame.draw.rect(surface, (0, 0, 0), (20, HEIGHT - 20, largura_barra, altura_barra))
+    pygame.draw.rect(surface, (0, 0, 255), (20, HEIGHT - 20, largura_barra * (estado['mana_jogador'] / 100), altura_barra))
 
-    # Barra de mana do inimigo
-    pygame.draw.rect(screen, COLORS["CINZA"], (1060, 660, 200, 20))
-    pygame.draw.rect(screen, COLORS["AZUL"], (1060, 660, 2 * estado_jogo["mana_inimigo"], 20))
-    desenhar_texto(f"Mana: {estado_jogo['mana_inimigo']}/100", None, COLORS["BRANCO"], screen, 1060, 630)
+    # Desenhar barras de saúde e mana do inimigo no canto inferior direito
+    saude_inimigo_texto = f"Saúde: {estado['saude_inimigo']}"
+    mana_inimigo_texto = f"Mana: {estado['mana_inimigo']}"
+    desenhar_texto(saude_inimigo_texto, fonte, cor, surface, WIDTH - 220, HEIGHT - 80)
+    desenhar_texto(mana_inimigo_texto, fonte, cor, surface, WIDTH - 220, HEIGHT - 40)
 
-    # Pontos de sabedoria
-    desenhar_texto(f"Pontos de Sabedoria: {estado_jogo['pontos_sabedoria']}", None, COLORS["BRANCO"], screen, WIDTH - 320, 20)
+    pygame.draw.rect(surface, (0, 0, 0), (WIDTH - 220, HEIGHT - 60, largura_barra, altura_barra))
+    pygame.draw.rect(surface, (0, 255, 0), (WIDTH - 220, HEIGHT - 60, largura_barra * (estado['saude_inimigo'] / 100), altura_barra))
+    pygame.draw.rect(surface, (0, 0, 0), (WIDTH - 220, HEIGHT - 20, largura_barra, altura_barra))
+    pygame.draw.rect(surface, (0, 0, 255), (WIDTH - 220, HEIGHT - 20, largura_barra * (estado['mana_inimigo'] / 100), altura_barra))
 
-def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado_jogo, dano_jogador=False, dano_inimigo=False, derrota_jogador=False, derrota_inimigo=False):
-    jogador_pos = (100, 300)
-    inimigo_pos = (980, 300)
+def desenhar_barra_tempo(surface, tempo_restante, tempo_total):
+    largura = 400
+    altura = 20
+    x = (surface.get_width() - largura) // 2
+    y = 20
+    pygame.draw.rect(surface, (255, 0, 0), (x, y, largura, altura))
+    pygame.draw.rect(surface, (0, 255, 0), (x, y, largura * (tempo_restante / tempo_total), altura))
 
-    # Animação do jogador
-    if derrota_jogador:
-        frames = jogador_animacoes["derrota"]
-        frame_delay = 200
-    elif estado_jogo["jogador_acao"] == "idle":
-        frames = jogador_animacoes["idle"]
-        frame_delay = 300
-    elif estado_jogo["jogador_acao"] == "attack":
-        frames = jogador_animacoes["attack"]
-        frame_delay = 200
+def desenhar_personagens(surface, jogador_animacoes, inimigo_animacoes, estado, dano_inimigo=False, dano_jogador=False):
+    jogador_acao = estado["jogador_acao"]
+    jogador_frame_atual = estado["jogador_frame_atual"]
 
-    screen.blit(frames[estado_jogo["jogador_frame_atual"]], jogador_pos)
-    estado_jogo["jogador_frame_tempo"] += 1
-    if estado_jogo["jogador_frame_tempo"] >= frame_delay:
-        estado_jogo["jogador_frame_tempo"] = 0
-        estado_jogo["jogador_frame_atual"] = (estado_jogo["jogador_frame_atual"] + 1) % len(frames)
-        if estado_jogo["jogador_acao"] == "attack" and estado_jogo["jogador_frame_atual"] == len(frames) - 1:
-            estado_jogo["jogador_acao"] = "idle"
-            estado_jogo["jogador_frame_atual"] = 0
+    inimigo_acao = estado["inimigo_acao"]
+    inimigo_frame_atual = estado["inimigo_frame_atual"]
 
-    # Animação do inimigo
-    if derrota_inimigo:
-        frames = inimigo_animacoes["derrota"]
-        frame_delay = 200
-    elif estado_jogo["inimigo_acao"] == "idle":
-        frames = inimigo_animacoes["idle"]
-        frame_delay = 300
-    elif estado_jogo["inimigo_acao"] == "attack":
-        frames = inimigo_animacoes["attack"]
-        frame_delay = 200
+    jogador_frames = jogador_animacoes.get(jogador_acao, jogador_animacoes["idle"])
+    inimigo_frames = inimigo_animacoes.get(inimigo_acao, inimigo_animacoes["idle"])
 
-    screen.blit(frames[estado_jogo["inimigo_frame_atual"]], inimigo_pos)
-    estado_jogo["inimigo_frame_tempo"] += 1
-    if estado_jogo["inimigo_frame_tempo"] >= frame_delay:
-        estado_jogo["inimigo_frame_tempo"] = 0
-        estado_jogo["inimigo_frame_atual"] = (estado_jogo["inimigo_frame_atual"] + 1) % len(frames)
-        if estado_jogo["inimigo_acao"] == "attack" and estado_jogo["inimigo_frame_atual"] == len(frames) - 1:
-            estado_jogo["inimigo_acao"] = "idle"
-            estado_jogo["inimigo_frame_atual"] = 0
+    jogador_frame = jogador_frames[jogador_frame_atual]
+    inimigo_frame = inimigo_frames[inimigo_frame_atual]
 
-def desenhar_barra_tempo(screen, tempo_restante, tempo_total):
-    largura_barra = int((tempo_restante / tempo_total) * 400)
-    pygame.draw.rect(screen, COLORS["AZUL"], (440, 80, largura_barra, 20))
+    surface.blit(jogador_frame, (100, 300))
+    surface.blit(inimigo_frame, (980, 300))
+
+def tocar_som(nome):
+    som = pygame.mixer.Sound(nome)
+    som.play()
+
+def parar_musica():
+    pygame.mixer.music.stop()
+
+def tocar_musica(nome):
+    pygame.mixer.music.load(nome)
+    pygame.mixer.music.play(-1)

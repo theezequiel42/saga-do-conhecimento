@@ -20,5 +20,6 @@ MUSICAS = {
     "menu": "musica_menu.mp3",
     "batalha": "musica_batalha.mp3",
     "vitoria": "som_vitoria.mp3",
-    "derrota": "som_derrota.mp3"
+    "derrota": "som_derrota.mp3",
+    "historia": "musica_historia.mp3"
 }

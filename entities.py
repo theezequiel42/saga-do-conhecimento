@@ -23,14 +23,15 @@ class Jogador:
             "inimigo_frame_tempo": 0
         }
         self.jogador_animacoes = {
-            "idle": carregar_animacao("idle-Sheet.png", 64, 64, 4),
-            "attack": carregar_animacao("Attack-01-Sheet.png", 64, 64, 8),
-            "derrota": carregar_animacao("derrota_jogador-Sheet.png", 64, 64, 8)
+            "idle": carregar_animacao("adventurer-idle", 50, 37, 4, individual_frames=True, scale_width=200, scale_height=200),
+            "run": carregar_animacao("adventurer-run", 50, 37, 6, individual_frames=True, scale_width=200, scale_height=200),
+            "attack": carregar_animacao("adventurer-attack1", 50, 37, 5, individual_frames=True, scale_width=200, scale_height=200),
+            "die": carregar_animacao("adventurer-die", 50, 37, 7, individual_frames=True, scale_width=200, scale_height=200)
         }
         self.inimigo_animacoes = {
-            "idle": carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4),
-            "attack": carregar_animacao("Attack-01-Sheet-inimigo.png", 64, 64, 8),
-            "derrota": carregar_animacao("derrota_inimigo-Sheet.png", 64, 64, 8)
+            "idle": carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4, scale_width=200, scale_height=200),
+            "attack": carregar_animacao("Attack-01-Sheet-inimigo.png", 64, 64, 8, scale_width=200, scale_height=200),
+            "die": carregar_animacao("derrota_inimigo-Sheet.png", 64, 64, 8, scale_width=200, scale_height=200)
         }
 
     def reset(self):
@@ -51,16 +52,27 @@ class Jogador:
         })
 
     def selecionar_acao(self, screen, background_img):
-        screen.blit(background_img, (0, 0))
-        desenhar_texto("Escolha sua ação:", None, COLORS["BRANCO"], screen, 20, 20)
         acoes = ["Ataque", "Magia", "Defesa", "Curar", "Fugir"]
-        retangulos_acoes = [desenhar_texto(acao, None, COLORS["BRANCO"], screen, 20, 60 + i * 40) for i, acao in enumerate(acoes)]
-        pygame.display.flip()
+        retangulos_acoes = []
+        opcao_selecionada = 0  # Inicializa a variável opcao_selecionada
 
-        acao_selecionada = None
-        opcao_selecionada = 0
+        y_base = 20  # Ajustar a posição para o canto superior esquerdo
+        for i, acao in enumerate(acoes):
+            y = y_base + i * 40
+            retangulos_acoes.append(desenhar_texto(acao, None, COLORS["BRANCO"], screen, 20, y))
 
-        while acao_selecionada is None:
+        while True:
+            screen.blit(background_img, (0, 0))
+            desenhar_hud(screen, self.estado)
+            desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado)
+            for i, (texto, ret) in enumerate(zip(acoes, retangulos_acoes)):
+                cor = COLORS["PRETO"] if i == opcao_selecionada else COLORS["BRANCO"]
+                if i == opcao_selecionada:
+                    pygame.draw.rect(screen, COLORS["AMARELO"], ret)
+                desenhar_texto(texto, None, cor, screen, 20, y_base + i * 40)
+
+            pygame.display.flip()
+
             mouse_pos = pygame.mouse.get_pos()
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -72,27 +84,15 @@ class Jogador:
                     elif evento.key == pygame.K_UP:
                         opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_acoes)
                     elif evento.key == pygame.K_RETURN:
-                        acao_selecionada = acoes[opcao_selecionada]
+                        return acoes[opcao_selecionada]
                 if evento.type == pygame.MOUSEBUTTONDOWN:
                     for i, ret in enumerate(retangulos_acoes):
                         if ret.collidepoint(evento.pos):
-                            acao_selecionada = acoes[i]
+                            return acoes[i]
+
                 for i, ret in enumerate(retangulos_acoes):
                     if ret.collidepoint(mouse_pos):
                         opcao_selecionada = i
-
-            screen.blit(background_img, (0, 0))
-            desenhar_hud(screen, self.estado)
-            desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado)
-            desenhar_texto("Escolha sua ação:", None, COLORS["BRANCO"], screen, 20, 20)
-            for i, (texto, ret) in enumerate(zip(acoes, retangulos_acoes)):
-                cor = COLORS["PRETO"] if i == opcao_selecionada else COLORS["BRANCO"]
-                if i == opcao_selecionada:
-                    pygame.draw.rect(screen, COLORS["AMARELO"], ret)
-                desenhar_texto(texto, None, cor, screen, 20, 60 + i * 40)
-            pygame.display.flip()
-
-        return acao_selecionada
 
     def apresentar_pergunta(self, perguntas, screen, background_img):
         pergunta = random.choice(perguntas)
@@ -103,7 +103,7 @@ class Jogador:
         opcoes_rects = []
         for i, opcao in enumerate(pergunta["opcoes"]):
             ret_opcao = desenhar_texto(opcao, None, COLORS["BRANCO"], screen, 20, 120 + i * 30)
-            opcoes_rects.append(pygame.Rect(20, 120 + i * 30, WIDTH - 40, 36))
+            opcoes_rects.append(pygame.Rect(20, 120 + i * 30, WIDTH - 40, 30))  # Ajuste na altura do retângulo
 
         pygame.display.flip()
         return pergunta, opcoes_rects
@@ -192,6 +192,7 @@ class Jogador:
                 for frame in self.jogador_animacoes["attack"]:
                     screen.blit(background_img, (0, 0))
                     desenhar_hud(screen, self.estado)
+                    desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado)
                     screen.blit(frame, (100, 300))
                     pygame.display.flip()
                     pygame.time.delay(150)
@@ -217,13 +218,13 @@ class Jogador:
 
     def mostrar_resultado(self, screen, background_img, resultado):
         if resultado == "Derrota":
-            for frame in self.jogador_animacoes["derrota"]:
+            for frame in self.jogador_animacoes["die"]:
                 screen.blit(background_img, (0, 0))
                 desenhar_hud(screen, self.estado)
                 screen.blit(frame, (100, 300))
                 pygame.display.flip()
                 pygame.time.delay(150)
-            ultimo_frame = self.jogador_animacoes["derrota"][-1]
+            ultimo_frame = self.jogador_animacoes["die"][-1]
             screen.blit(background_img, (0, 0))
             desenhar_hud(screen, self.estado)
             screen.blit(ultimo_frame, (100, 300))
@@ -246,9 +247,9 @@ class Inimigo:
             "inimigo_frame_tempo": 0
         }
         self.inimigo_animacoes = {
-            "idle": carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4),
-            "attack": carregar_animacao("Attack-01-Sheet-inimigo.png", 64, 64, 8),
-            "derrota": carregar_animacao("derrota_inimigo-Sheet.png", 64, 64, 8)
+            "idle": carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4, scale_width=200, scale_height=200),
+            "attack": carregar_animacao("Attack-01-Sheet-inimigo.png", 64, 64, 8, scale_width=200, scale_height=200),
+            "die": carregar_animacao("derrota_inimigo-Sheet.png", 64, 64, 8, scale_width=200, scale_height=200)
         }
 
     def reset(self):
@@ -290,6 +291,7 @@ class Inimigo:
             for frame in self.inimigo_animacoes["attack"]:
                 screen.blit(background_img, (0, 0))
                 desenhar_hud(screen, jogador.estado)
+                desenhar_personagens(screen, jogador.jogador_animacoes, self.inimigo_animacoes, jogador.estado)
                 screen.blit(frame, (980, 300))
                 pygame.display.flip()
                 pygame.time.delay(150)
@@ -305,14 +307,14 @@ class Inimigo:
         pygame.time.delay(2000)
 
     def mostrar_derrota(self, screen, background_img, estado_jogador):
-        for frame in self.inimigo_animacoes["derrota"]:
+        for frame in self.inimigo_animacoes["die"]:
             screen.blit(background_img, (0, 0))
             desenhar_hud(screen, estado_jogador)
             screen.blit(frame, (980, 300))
             pygame.display.flip()
             pygame.time.delay(150)
         # Manter o último quadro da animação na tela
-        ultimo_frame = self.inimigo_animacoes["derrota"][-1]
+        ultimo_frame = self.inimigo_animacoes["die"][-1]
         screen.blit(background_img, (0, 0))
         desenhar_hud(screen, estado_jogador)
         screen.blit(ultimo_frame, (980, 300))

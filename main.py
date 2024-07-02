@@ -1,6 +1,7 @@
 import os
 import pygame
 from config import WIDTH, HEIGHT, COLORS, MUSICAS
+from story_mode import modo_historia
 from utils import carregar_imagem, tocar_musica, parar_musica, desenhar_texto, desenhar_hud, desenhar_personagens, desenhar_barra_tempo, tocar_som
 from entities import Jogador, Inimigo
 from questions import perguntas_por_nivel_e_disciplina
@@ -46,6 +47,10 @@ def batalha():
     # Loop principal da batalha
     while jogador.estado["batalha_ativa"]:
         # Selecionar ação do jogador
+        screen.blit(background_batalha_img, (0, 0))
+        desenhar_hud(screen, jogador.estado)
+        desenhar_personagens(screen, jogador.jogador_animacoes, inimigo.inimigo_animacoes, jogador.estado)
+
         acao = jogador.selecionar_acao(screen, background_batalha_img)
 
         if acao == "Fugir":
@@ -69,7 +74,8 @@ def batalha():
             tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
             if resultado == "Vitória":
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
-            jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
@@ -85,7 +91,8 @@ def batalha():
             tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
             if resultado == "Vitória":
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
-            jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
@@ -95,7 +102,7 @@ def tela_inicial():
     tocar_musica(MUSICAS["menu"])
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("A Saga do Conhecimento", None, COLORS["BRANCO"], screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
-    opcoes_menu = ["Jogar", "Tela Cheia", "Opções", "Sair"]
+    opcoes_menu = ["Jogar", "Tela Cheia", "Opções", "Modo História", "Sair"]
     retangulos_menu = [desenhar_texto(opcao, None, COLORS["BRANCO"], screen, WIDTH // 2 - 50, HEIGHT // 2 + i * 50) for i, opcao in enumerate(opcoes_menu)]
     pygame.display.flip()
 
@@ -123,6 +130,9 @@ def tela_inicial():
                     elif opcao_selecionada == 2:
                         selecionar_nivel_e_disciplina()
                     elif opcao_selecionada == 3:
+                        tocar_musica(MUSICAS["historia"])
+                        modo_historia(screen, jogador)
+                    elif opcao_selecionada == 4:
                         pygame.quit()
                         exit()
             if evento.type == pygame.MOUSEBUTTONDOWN:
@@ -137,6 +147,9 @@ def tela_inicial():
                         elif i == 2:
                             selecionar_nivel_e_disciplina()
                         elif i == 3:
+                            tocar_musica(MUSICAS["historia"])
+                            modo_historia(screen, jogador)
+                        elif i == 4:
                             pygame.quit()
                             exit()
             # Atualizar a opção selecionada com base na posição do mouse
