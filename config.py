@@ -1,6 +1,4 @@
-# Configurações do jogo e constantes
-
-# Tamanho da tela
+# Configurações gerais
 WIDTH, HEIGHT = 1280, 720
 
 # Cores
@@ -19,7 +17,10 @@ COLORS = {
 MUSICAS = {
     "menu": "musica_menu.mp3",
     "batalha": "musica_batalha.mp3",
+    "historia": "musica_historia.mp3",
     "vitoria": "som_vitoria.mp3",
     "derrota": "som_derrota.mp3",
     "historia": "musica_historia.mp3"
 }
+
+# altura_chao = HEIGHT - 400  # Ajuste esta variável para regular a altura do chão

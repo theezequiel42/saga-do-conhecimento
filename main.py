@@ -1,5 +1,6 @@
 import os
 import pygame
+import random
 from config import WIDTH, HEIGHT, COLORS, MUSICAS
 from story_mode import modo_historia
 from utils import carregar_imagem, tocar_musica, parar_musica, desenhar_texto, desenhar_hud, desenhar_personagens, desenhar_barra_tempo, tocar_som
@@ -26,6 +27,7 @@ listar_arquivos_diretorio(os.getcwd())
 # Carregar e redimensionar imagens
 background_batalha_img = carregar_imagem("background_batalha.png", WIDTH, HEIGHT)
 background_menu_img = carregar_imagem("background_menu.png", WIDTH, HEIGHT)
+background_historia_img = carregar_imagem("background_historia.png", WIDTH, HEIGHT)
 
 # Inicializar Jogador e Inimigo
 jogador = Jogador()
@@ -76,6 +78,8 @@ def batalha():
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
             else:
                 jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
@@ -93,9 +97,91 @@ def batalha():
                 inimigo.mostrar_derrota(screen, background_batalha_img, jogador.estado)
             else:
                 jogador.mostrar_resultado(screen, background_batalha_img, resultado)
+            else:
+                jogador.mostrar_resultado(screen, background_batalha_img, resultado)
             pygame.time.delay(3000)  # Aguarda um tempo antes de retornar ao menu inicial
             tela_inicial()
             break
+
+# Função para a fase zero do modo história
+def fase_zero():
+    running = True
+    clock = pygame.time.Clock()
+
+    # Configurações iniciais do jogador
+    jogador_pos = [100, HEIGHT - 120]  # Ajuste aqui para posicionar o jogador mais para baixo na tela
+    jogador_vel_y = 0
+    jogador_no_chao = True
+
+    # Definindo a altura do chão da fase
+    altura_chao = HEIGHT - 400  # Ajuste a altura do chão conforme necessário
+
+    # Resetar estado do jogador para fase zero
+    jogador.estado.update({
+        "jogador_acao": "idle",
+        "jogador_frame_atual": 0,
+        "jogador_frame_tempo": 0
+    })
+
+    # Desenhar opção de sair antes do loop principal
+    ret_sair = desenhar_texto("Sair", None, COLORS["BRANCO"], screen, WIDTH - 100, HEIGHT - 50)
+
+    # Loop principal da fase zero
+    while running:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    running = False
+                    tela_inicial()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_sair.collidepoint(pygame.mouse.get_pos()):
+                    running = False
+                    tela_inicial()
+
+        # Controle de movimento do jogador
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            jogador.estado["jogador_acao"] = "run"
+        else:
+            jogador.estado["jogador_acao"] = "idle"
+
+        if keys[pygame.K_LEFT]:
+            jogador_pos[0] -= 5
+        if keys[pygame.K_RIGHT]:
+            jogador_pos[0] += 5
+        if keys[pygame.K_SPACE] and jogador_no_chao:
+            jogador_vel_y = -15
+            jogador_no_chao = False
+
+        # Física do pulo
+        jogador_vel_y += 1
+        jogador_pos[1] += jogador_vel_y
+        if jogador_pos[1] >= altura_chao:  # Ajuste aqui a altura do chão
+            jogador_pos[1] = altura_chao
+            jogador_vel_y = 0
+            jogador_no_chao = True
+
+        # Desenhar a fase
+        screen.blit(background_historia_img, (0, 0))
+        screen.blit(jogador.jogador_animacoes[jogador.estado["jogador_acao"]][jogador.estado["jogador_frame_atual"]], jogador_pos)
+
+        # Desenhar opção de sair
+        mouse_pos = pygame.mouse.get_pos()
+        cor = COLORS["PRETO"] if ret_sair.collidepoint(mouse_pos) else COLORS["BRANCO"]
+        if ret_sair.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, COLORS["AMARELO"], ret_sair)
+        ret_sair = desenhar_texto("Sair", None, cor, screen, WIDTH - 100, HEIGHT - 50)
+
+        pygame.display.flip()
+        clock.tick(60)  # Limitar a 60 quadros por segundo
+
+# Função principal do modo história
+def modo_historia():
+    tocar_musica(MUSICAS["historia"])
+    fase_zero()
 
 # Função para exibir a tela inicial
 def tela_inicial():
@@ -125,9 +211,12 @@ def tela_inicial():
                         jogando = True
                         batalha()
                     elif opcao_selecionada == 1:
+                        jogando = True
+                        modo_historia()
+                    elif opcao_selecionada == 2:
                         definir_modo_jogo(True)
                         tela_inicial()
-                    elif opcao_selecionada == 2:
+                    elif opcao_selecionada == 3:
                         selecionar_nivel_e_disciplina()
                     elif opcao_selecionada == 3:
                         tocar_musica(MUSICAS["historia"])
@@ -142,9 +231,12 @@ def tela_inicial():
                             jogando = True
                             batalha()
                         elif i == 1:
+                            jogando = True
+                            modo_historia()
+                        elif i == 2:
                             definir_modo_jogo(True)
                             tela_inicial()
-                        elif i == 2:
+                        elif i == 3:
                             selecionar_nivel_e_disciplina()
                         elif i == 3:
                             tocar_musica(MUSICAS["historia"])
@@ -152,12 +244,12 @@ def tela_inicial():
                         elif i == 4:
                             pygame.quit()
                             exit()
-            # Atualizar a opção selecionada com base na posição do mouse
-            for i, ret in enumerate(retangulos_menu):
-                if ret.collidepoint(mouse_pos):
-                    opcao_selecionada = i
+
+        for i, ret in enumerate(retangulos_menu):
+            if ret.collidepoint(mouse_pos):
+                opcao_selecionada = i
+
         screen.blit(background_menu_img, (0, 0))
-        desenhar_texto("A Saga do Conhecimento", None, COLORS["BRANCO"], screen, WIDTH // 2 - 150, HEIGHT // 2 - 100)
         for i, opcao in enumerate(opcoes_menu):
             cor = COLORS["PRETO"] if i == opcao_selecionada else COLORS["BRANCO"]
             if i == opcao_selecionada:
@@ -167,13 +259,14 @@ def tela_inicial():
 
 # Função para definir o modo de jogo
 def definir_modo_jogo(tela_cheia):
-    global screen, background_batalha_img, background_menu_img
+    global screen, background_batalha_img, background_menu_img, background_historia_img
     if tela_cheia:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     else:
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
     background_batalha_img = carregar_imagem("background_batalha.png", WIDTH, HEIGHT)
     background_menu_img = carregar_imagem("background_menu.png", WIDTH, HEIGHT)
+    background_historia_img = carregar_imagem("background_historia.png", WIDTH, HEIGHT)
 
 # Iniciar a tela inicial
 tela_inicial()

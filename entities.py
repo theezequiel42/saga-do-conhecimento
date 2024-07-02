@@ -1,7 +1,6 @@
 import pygame
-from utils import carregar_animacao, desenhar_hud, desenhar_personagens, desenhar_texto, desenhar_barra_tempo, tocar_som, parar_musica
 from config import COLORS, WIDTH, HEIGHT
-import random
+from utils import carregar_animacao, desenhar_texto, desenhar_hud, desenhar_personagens, desenhar_barra_tempo, tocar_som, parar_musica
 
 class Jogador:
     def __init__(self):
@@ -80,10 +79,11 @@ class Jogador:
                     exit()
                 if evento.type == pygame.KEYDOWN:
                     if evento.key == pygame.K_DOWN:
-                        opcao_selecionada = (opcao_selecionada + 1) % len(retangulos_acoes)
+                        opcao_selecionada = (opcao_selecionada + 1) % len(acoes)
                     elif evento.key == pygame.K_UP:
-                        opcao_selecionada = (opcao_selecionada - 1) % len(retangulos_acoes)
+                        opcao_selecionada = (opcao_selecionada - 1) % len(acoes)
                     elif evento.key == pygame.K_RETURN:
+                        return acoes[opcao_selecionada]
                         return acoes[opcao_selecionada]
                 if evento.type == pygame.MOUSEBUTTONDOWN:
                     for i, ret in enumerate(retangulos_acoes):
@@ -98,8 +98,10 @@ class Jogador:
         pergunta = random.choice(perguntas)
         screen.blit(background_img, (0, 0))
         desenhar_hud(screen, self.estado)
-        desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado)
+        desenhar_personagens(screen, self.jogador_animacoes, {}, self.estado)
         desenhar_texto(pergunta["pergunta"], None, COLORS["BRANCO"], screen, 20, 20)
+        desenhar_barra_tempo(screen, 10, 10)
+
         opcoes_rects = []
         for i, opcao in enumerate(pergunta["opcoes"]):
             ret_opcao = desenhar_texto(opcao, None, COLORS["BRANCO"], screen, 20, 120 + i * 30)
@@ -116,6 +118,10 @@ class Jogador:
         while opcao_selecionada is None:
             tempo_atual = pygame.time.get_ticks()
             tempo_passado = (tempo_atual - tempo_inicio) / 1000
+            tempo_restante = 10 - tempo_passado
+
+            if tempo_restante <= 0:
+                break
 
             mouse_pos = pygame.mouse.get_pos()
             for evento in pygame.event.get():
@@ -139,14 +145,14 @@ class Jogador:
 
             screen.blit(background_img, (0, 0))
             desenhar_hud(screen, self.estado)
-            desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado)
+            desenhar_personagens(screen, self.jogador_animacoes, {}, self.estado)
             desenhar_texto(pergunta["pergunta"], None, COLORS["BRANCO"], screen, 20, 20)
             for i, opcao in enumerate(pergunta["opcoes"]):
                 cor = COLORS["PRETO"] if i == indice_opcao_selecionada else COLORS["BRANCO"]
                 if i == indice_opcao_selecionada:
                     pygame.draw.rect(screen, COLORS["CINZA_CLARO"], opcoes_rects[i])
                 desenhar_texto(opcao, None, cor, screen, 20, 120 + i * 30)
-            desenhar_barra_tempo(screen, 10 - tempo_passado, 10)
+            desenhar_barra_tempo(screen, tempo_restante, 10)
             pygame.display.flip()
 
         tempo_total_resposta = (pygame.time.get_ticks() - tempo_inicio) / 1000
@@ -163,8 +169,6 @@ class Jogador:
         if acao == "Fugir":
             self.estado["batalha_ativa"] = False
             mensagem = "Você fugiu da batalha!"
-            self.reset()  # Reseta o estado do jogador
-            inimigo.reset()  # Reseta o estado do inimigo
             parar_musica()
             return "fugir"
         else:
@@ -203,7 +207,7 @@ class Jogador:
 
             screen.blit(background_img, (0, 0))
             desenhar_hud(screen, self.estado)
-            desenhar_personagens(screen, self.jogador_animacoes, self.inimigo_animacoes, self.estado, dano_inimigo=dano_inimigo)
+            desenhar_personagens(screen, self.jogador_animacoes, inimigo.inimigo_animacoes, self.estado, dano_inimigo=dano_inimigo)
             desenhar_texto(mensagem, None, COLORS["BRANCO"], screen, 20, 20)
             desenhar_texto(f"Tempo de resposta: {tempo_resposta:.2f} segundos", None, COLORS["BRANCO"], screen, 20, 60)
             pygame.display.flip()
@@ -238,10 +242,8 @@ class Jogador:
 
 class Inimigo:
     def __init__(self):
-        self.saude = 100
-        self.mana = 100
-        self.defendendo = False
         self.estado = {
+            "saude_inimigo": 100,
             "inimigo_acao": "idle",
             "inimigo_frame_atual": 0,
             "inimigo_frame_tempo": 0
@@ -253,14 +255,12 @@ class Inimigo:
         }
 
     def reset(self):
-        self.saude = 100
-        self.mana = 100
-        self.defendendo = False
-        self.estado = {
+        self.estado.update({
+            "saude_inimigo": 100,
             "inimigo_acao": "idle",
             "inimigo_frame_atual": 0,
             "inimigo_frame_tempo": 0
-        }
+        })
 
     def turno_inimigo(self, jogador, screen, background_img):
         dano = random.randint(5, 15)
@@ -268,21 +268,18 @@ class Inimigo:
         dano_jogador = False
         mensagem = ""
 
-        if tipo_acao == "Magia" and self.mana >= 10:
-            self.mana -= 10
+        if tipo_acao == "Magia" and jogador.estado["mana_inimigo"] >= 10:
+            jogador.estado["mana_inimigo"] -= 10
             dano += 5
-            self.estado["inimigo_acao"] = "attack"
         elif tipo_acao == "Defesa":
-            self.defendendo = True
+            jogador.estado["defendendo"] = True
             mensagem = "O inimigo se preparou para a defesa!"
             dano = 0
-            self.estado["inimigo_acao"] = "idle"
         else:
             if jogador.estado["defendendo"]:
                 dano //= 2
                 jogador.estado["defendendo"] = False
                 mensagem = "Defesa bem-sucedida! Dano reduzido!"
-            self.estado["inimigo_acao"] = "attack"
 
         jogador.estado["saude_jogador"] -= dano
         dano_jogador = dano > 0
@@ -295,8 +292,6 @@ class Inimigo:
                 screen.blit(frame, (980, 300))
                 pygame.display.flip()
                 pygame.time.delay(150)
-
-        self.estado["inimigo_acao"] = "idle"
 
         screen.blit(background_img, (0, 0))
         desenhar_hud(screen, jogador.estado)
@@ -316,6 +311,7 @@ class Inimigo:
         # Manter o último quadro da animação na tela
         ultimo_frame = self.inimigo_animacoes["die"][-1]
         screen.blit(background_img, (0, 0))
-        desenhar_hud(screen, estado_jogador)
-        screen.blit(ultimo_frame, (980, 300))
+        desenhar_hud(screen, estado)
+        desenhar_personagens(screen, {}, self.inimigo_animacoes, estado, derrota_inimigo=True)
         pygame.display.flip()
+        pygame.time.delay(3000)
