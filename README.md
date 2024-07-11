@@ -32,12 +32,5 @@ No menu principal, selecione "Batalhar".
 Durante a batalha, selecione sua ação usando as teclas de seta ou o mouse:
 Enter: Confirmar ação
 Responda às perguntas apresentadas para realizar ações e vencer a batalha.
-Estrutura do Projeto
-Arquivos e Diretórios
-main.py: Ponto de entrada do jogo. Contém a lógica principal para iniciar o jogo e gerenciar os modos de jogo.
-config.py: Contém as configurações gerais do jogo, como cores, dimensões da tela e músicas.
-entities.py: Define as classes Jogador e Inimigo, e contém a lógica para suas ações e animações.
-questions.py: Contém as perguntas utilizadas no jogo, organizadas por nível e disciplina.
-utils.py: Funções utilitárias para carregar imagens, tocar música, desenhar na tela, etc.
-README.md: Este arquivo, contendo a documentação do projeto.
+
 
