@@ -1,6 +1,7 @@
 import os
 import pygame
 import random
+from questions import perguntas_por_nivel_e_disciplina
 
 # Inicialização da Pygame
 pygame.init()
@@ -92,16 +93,13 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado):
 
     # Animação do jogador
     frames = jogador_animacoes[estado["jogador_acao"]]
-    frame_delay = 300  # Ajuste a velocidade da animação (maior valor para mais devagar)
+    frame_delay = 10  # Ajuste a velocidade da animação (menor valor para mais rápido)
 
     screen.blit(frames[estado["jogador_frame_atual"]], jogador_pos)
     estado["jogador_frame_tempo"] += 1
     if estado["jogador_frame_tempo"] >= frame_delay:
         estado["jogador_frame_tempo"] = 0
         estado["jogador_frame_atual"] = (estado["jogador_frame_atual"] + 1) % len(frames)
-        if estado["jogador_acao"] == "attack" and estado["jogador_frame_atual"] == len(frames) - 1:
-            estado["jogador_acao"] = "idle"
-            estado["jogador_frame_atual"] = 0
 
     # Animação do inimigo
     frames = inimigo_animacoes["idle"]
@@ -126,40 +124,6 @@ def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
         frame = sprite_sheet.subsurface((i * largura_frame, 0, largura_frame, altura_frame))
         frames.append(pygame.transform.scale(frame, (200, 200)))
     return frames
-
-# Perguntas organizadas por nível e disciplina
-perguntas_por_nivel_e_disciplina = {
-    "1° Ano": {
-        "Matemática": [
-            {"pergunta": "Quanto é 2 + 2?", "opcoes": ["3", "4", "5", "6"], "resposta": 1},
-            {"pergunta": "Quanto é 3 + 3?", "opcoes": ["5", "6", "7", "8"], "resposta": 1},
-            {"pergunta": "Quanto é 1 + 1?", "opcoes": ["1", "2", "3", "4"], "resposta": 1},
-            {"pergunta": "Quanto é 4 - 2?", "opcoes": ["1", "2", "3", "4"], "resposta": 1},
-            {"pergunta": "Quanto é 5 - 3?", "opcoes": ["1", "2", "3", "4"], "resposta": 1},
-            {"pergunta": "Quanto é 7 + 1?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 6 - 4?", "opcoes": ["1", "2", "3", "4"], "resposta": 1},
-            {"pergunta": "Quanto é 3 + 2?", "opcoes": ["4", "5", "6", "7"], "resposta": 1},
-            {"pergunta": "Quanto é 9 - 1?", "opcoes": ["7", "8", "9", "10"], "resposta": 1},
-            {"pergunta": "Quanto é 10 - 5?", "opcoes": ["4", "5", "6", "7"], "resposta": 1},
-        ],
-        "Língua Portuguesa": [
-            {"pergunta": "Qual é a letra inicial da palavra 'gato'?", "opcoes": ["A", "B", "G", "D"], "resposta": 2},
-            {"pergunta": "Qual é a letra inicial da palavra 'casa'?", "opcoes": ["C", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'banana'?", "opcoes": ["A", "B", "G", "D"], "resposta": 1},
-            {"pergunta": "Qual é a letra inicial da palavra 'dado'?", "opcoes": ["A", "B", "G", "D"], "resposta": 3},
-            {"pergunta": "Qual é a letra inicial da palavra 'elefante'?", "opcoes": ["E", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'foca'?", "opcoes": ["A", "F", "G", "D"], "resposta": 1},
-            {"pergunta": "Qual é a letra inicial da palavra 'girafa'?", "opcoes": ["A", "B", "G", "D"], "resposta": 2},
-            {"pergunta": "Qual é a letra inicial da palavra 'hipopótamo'?", "opcoes": ["H", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'iguana'?", "opcoes": ["I", "B", "G", "D"], "resposta": 0},
-            {"pergunta": "Qual é a letra inicial da palavra 'jacaré'?", "opcoes": ["J", "B", "G", "D"], "resposta": 0},
-        ],
-    },
-    "2° Ano": {
-        # Adicione perguntas para o 2° Ano
-    },
-    # Adicione outros níveis até o 9° Ano
-}
 
 # Estado do jogo
 estado = {
@@ -699,6 +663,7 @@ def modo_historia():
 
 # Função para a fase zero do modo história
 def fase_zero():
+    global estado
     running = True
     clock = pygame.time.Clock()
     jogador_pos = [100, HEIGHT - 120]
@@ -756,7 +721,8 @@ def fase_zero():
             estado["jogador_frame_atual"] = (estado["jogador_frame_atual"] + 1) % len(jogador_animacoes[estado["jogador_acao"]])
 
         screen.blit(background_historia_img, (0, 0))
-        screen.blit(jogador_animacoes[estado["jogador_acao"]][estado["jogador_frame_atual"]], jogador_pos)
+        if estado["jogador_frame_atual"] < len(jogador_animacoes[estado["jogador_acao"]]):
+            screen.blit(jogador_animacoes[estado["jogador_acao"]][estado["jogador_frame_atual"]], jogador_pos)
         
         mouse_pos = pygame.mouse.get_pos()
         cor = COLORS["PRETO"] if ret_sair.collidepoint(mouse_pos) else COLORS["BRANCO"]
