@@ -93,7 +93,7 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado):
 
     # Animação do jogador
     frames = jogador_animacoes[estado["jogador_acao"]]
-    frame_delay = 10  # Ajuste a velocidade da animação (menor valor para mais rápido)
+    frame_delay = 100  # Ajuste a velocidade da animação (menor valor para mais rápido)
 
     screen.blit(frames[estado["jogador_frame_atual"]], jogador_pos)
     estado["jogador_frame_tempo"] += 1
