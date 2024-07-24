@@ -39,8 +39,12 @@ font = pygame.font.Font(None, 36)
 
 # Carregar e redimensionar imagens
 def carregar_imagem(caminho, largura, altura):
-    imagem = pygame.image.load(caminho).convert_alpha()
-    return pygame.transform.scale(imagem, (largura, altura))
+    try:
+        imagem = pygame.image.load(caminho).convert_alpha()
+        return pygame.transform.scale(imagem, (largura, altura))
+    except pygame.error as e:
+        print(f"Erro ao carregar imagem: {caminho}\n{e}")
+        return pygame.Surface((largura, altura))  # Retorna uma superfície vazia como fallback
 
 background_batalha_img = carregar_imagem("background_batalha.png", WIDTH, HEIGHT)
 background_menu_img = carregar_imagem("background_menu.png", WIDTH, HEIGHT)
@@ -67,82 +71,86 @@ def desenhar_texto(texto, fonte, cor, superficie, x, y):
 def desenhar_hud(screen, estado):
     # Barra de saúde do jogador
     pygame.draw.rect(screen, COLORS["VERMELHO"], (20, 600, 200, 20))
-    pygame.draw.rect(screen, COLORS["VERDE"], (20, 600, 2 * estado["saude_jogador"], 20))
-    desenhar_texto(f"Jogador: {estado['saude_jogador']}/100", font, COLORS["BRANCO"], screen, 20, 570)
+    pygame.draw.rect(screen, COLORS["VERDE"], (20, 600, 2 * estado.saude_jogador, 20))
+    desenhar_texto(f"Jogador: {estado.saude_jogador}/100", font, COLORS["BRANCO"], screen, 20, 570)
 
     # Barra de saúde do inimigo
     pygame.draw.rect(screen, COLORS["VERMELHO"], (1060, 600, 200, 20))
-    pygame.draw.rect(screen, COLORS["VERDE"], (1060, 600, 2 * estado["saude_inimigo"], 20))
-    desenhar_texto(f"Inimigo: {estado['saude_inimigo']}/100", font, COLORS["BRANCO"], screen, 1060, 570)
+    pygame.draw.rect(screen, COLORS["VERDE"], (1060, 600, 2 * estado.saude_inimigo, 20))
+    desenhar_texto(f"Inimigo: {estado.saude_inimigo}/100", font, COLORS["BRANCO"], screen, 1060, 570)
 
     # Barra de mana do jogador
     pygame.draw.rect(screen, COLORS["CINZA"], (20, 660, 200, 20))
-    pygame.draw.rect(screen, COLORS["AZUL"], (20, 660, 2 * estado["mana_jogador"], 20))
-    desenhar_texto(f"Mana: {estado['mana_jogador']}/100", font, COLORS["BRANCO"], screen, 20, 630)
+    pygame.draw.rect(screen, COLORS["AZUL"], (20, 660, 2 * estado.mana_jogador, 20))
+    desenhar_texto(f"Mana: {estado.mana_jogador}/100", font, COLORS["BRANCO"], screen, 20, 630)
 
     # Barra de mana do inimigo
     pygame.draw.rect(screen, COLORS["CINZA"], (1060, 660, 200, 20))
-    pygame.draw.rect(screen, COLORS["AZUL"], (1060, 660, 2 * estado["mana_inimigo"], 20))
-    desenhar_texto(f"Mana: {estado['mana_inimigo']}/100", font, COLORS["BRANCO"], screen, 1060, 630)
+    pygame.draw.rect(screen, COLORS["AZUL"], (1060, 660, 2 * estado.mana_inimigo, 20))
+    desenhar_texto(f"Mana: {estado.mana_inimigo}/100", font, COLORS["BRANCO"], screen, 1060, 630)
 
     # Pontos de sabedoria
-    desenhar_texto(f"Pontos de Sabedoria: {estado['pontos_sabedoria']}", font, COLORS["BRANCO"], screen, WIDTH - 320, 20)
+    desenhar_texto(f"Pontos de Sabedoria: {estado.pontos_sabedoria}", font, COLORS["BRANCO"], screen, WIDTH - 320, 20)
 
 def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado):
     jogador_pos = (100, 300)  # Ajustar posição do jogador mais para baixo
     inimigo_pos = (980, 300)  # Ajustar posição do inimigo mais para baixo
 
     # Animação do jogador
-    frames = jogador_animacoes[estado["jogador_acao"]]
+    frames = jogador_animacoes[estado.jogador_acao]
     frame_delay = 100  # Ajuste a velocidade da animação (menor valor para mais rápido)
 
-    screen.blit(frames[estado["jogador_frame_atual"]], jogador_pos)
-    estado["jogador_frame_tempo"] += 1
-    if estado["jogador_frame_tempo"] >= frame_delay:
-        estado["jogador_frame_tempo"] = 0
-        estado["jogador_frame_atual"] = (estado["jogador_frame_atual"] + 1) % len(frames)
+    screen.blit(frames[estado.jogador_frame_atual], jogador_pos)
+    estado.jogador_frame_tempo += 1
+    if estado.jogador_frame_tempo >= frame_delay:
+        estado.jogador_frame_tempo = 0
+        estado.jogador_frame_atual = (estado.jogador_frame_atual + 1) % len(frames)
 
     # Animação do inimigo
     frames = inimigo_animacoes["idle"]
     frame_delay = 300
 
-    screen.blit(frames[estado["inimigo_frame_atual"]], inimigo_pos)
-    estado["inimigo_frame_tempo"] += 1
-    if estado["inimigo_frame_tempo"] >= frame_delay:  # Ajuste a velocidade da animação (maior valor para mais devagar)
-        estado["inimigo_frame_tempo"] = 0
-        estado["inimigo_frame_atual"] = (estado["inimigo_frame_atual"] + 1) % len(frames)
+    screen.blit(frames[estado.inimigo_frame_atual], inimigo_pos)
+    estado.inimigo_frame_tempo += 1
+    if estado.inimigo_frame_tempo >= frame_delay:  # Ajuste a velocidade da animação (maior valor para mais devagar)
+        estado.inimigo_frame_tempo = 0
+        estado.inimigo_frame_atual = (estado.inimigo_frame_atual + 1) % len(frames)
 
 def desenhar_barra_tempo(screen, tempo_restante, tempo_total):
     largura_barra = int((tempo_restante / tempo_total) * 400)
     pygame.draw.rect(screen, COLORS["AZUL"], (440, 80, largura_barra, 20))
 
 def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
-    if not os.path.isfile(caminho):
-        raise FileNotFoundError(f"No file '{caminho}' found in working directory '{os.getcwd()}'.")
-    sprite_sheet = pygame.image.load(caminho).convert_alpha()
+    try:
+        sprite_sheet = pygame.image.load(caminho).convert_alpha()
+    except pygame.error as e:
+        print(f"Erro ao carregar animação: {caminho}\n{e}")
+        return [pygame.Surface((largura_frame, altura_frame)) for _ in range(num_frames)]
+    
     frames = []
     for i in range(num_frames):
         frame = sprite_sheet.subsurface((i * largura_frame, 0, largura_frame, altura_frame))
         frames.append(pygame.transform.scale(frame, (200, 200)))
     return frames
 
-# Estado do jogo
-estado = {
-    "saude_jogador": 100,
-    "saude_inimigo": 100,
-    "mana_jogador": 100,
-    "mana_inimigo": 100,
-    "pontos_sabedoria": 0,
-    "defendendo": False,
-    "nivel_selecionado": "1° Ano",
-    "disciplinas_selecionadas": ["Matemática", "Língua Portuguesa"],
-    "batalha_ativa": True,
-    "jogador_acao": "idle",
-    "jogador_frame_atual": 0,
-    "jogador_frame_tempo": 0,
-    "inimigo_frame_atual": 0,
-    "inimigo_frame_tempo": 0
-}
+class EstadoJogo:
+    def __init__(self):
+        self.saude_jogador = 100
+        self.saude_inimigo = 100
+        self.mana_jogador = 100
+        self.mana_inimigo = 100
+        self.pontos_sabedoria = 0
+        self.defendendo = False
+        self.nivel_selecionado = "1° Ano"
+        self.disciplinas_selecionadas = ["Matemática", "Língua Portuguesa"]
+        self.batalha_ativa = True
+        self.jogador_acao = "idle"
+        self.jogador_frame_atual = 0
+        self.jogador_frame_tempo = 0
+        self.inimigo_frame_atual = 0
+        self.inimigo_frame_tempo = 0
+
+estado = EstadoJogo()
 
 # Carregar animação do jogador e do inimigo
 jogador_animacoes = {
@@ -184,7 +192,7 @@ def selecionar_nivel_e_disciplina():
                     opcao_selecionada = (opcao_selecionada - 1) % (len(retangulos_niveis) + 1)
                 elif evento.key == pygame.K_RETURN:
                     if opcao_selecionada < len(niveis):
-                        estado["nivel_selecionado"] = niveis[opcao_selecionada]
+                        estado.nivel_selecionado = niveis[opcao_selecionada]
                         selecionar_disciplina()
                         return
                     else:
@@ -196,7 +204,7 @@ def selecionar_nivel_e_disciplina():
                     return
                 for i, ret in enumerate(retangulos_niveis):
                     if ret.collidepoint(evento.pos):
-                        estado["nivel_selecionado"] = niveis[i]
+                        estado.nivel_selecionado = niveis[i]
                         selecionar_disciplina()
                         return
         for i, ret in enumerate(retangulos_niveis):
@@ -222,7 +230,7 @@ def selecionar_disciplina():
     global estado
     screen.blit(background_menu_img, (0, 0))
     desenhar_texto("Selecione a Disciplina:", font, COLORS["BRANCO"], screen, 20, 20)
-    disciplinas = ["Todas as Disciplinas"] + list(perguntas_por_nivel_e_disciplina[estado["nivel_selecionado"]].keys())
+    disciplinas = ["Todas as Disciplinas"] + list(perguntas_por_nivel_e_disciplina[estado.nivel_selecionado].keys())
     retangulos_disciplinas = []
     for i, disciplina in enumerate(disciplinas):
         retangulo = desenhar_texto(f"{i+1}. {disciplina}", font, COLORS["BRANCO"], screen, 20, 60 + i * 40)
@@ -244,9 +252,9 @@ def selecionar_disciplina():
                     opcao_selecionada = (opcao_selecionada - 1) % (len(retangulos_disciplinas) + 1)
                 elif evento.key == pygame.K_RETURN:
                     if opcao_selecionada < len(disciplinas) - 1:
-                        estado["disciplinas_selecionadas"] = [disciplinas[opcao_selecionada]]
+                        estado.disciplinas_selecionadas = [disciplinas[opcao_selecionada]]
                     elif opcao_selecionada == 0:
-                        estado["disciplinas_selecionadas"] = list(perguntas_por_nivel_e_disciplina[estado["nivel_selecionado"]].keys())
+                        estado.disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[estado.nivel_selecionado].keys())
                     else:
                         selecionar_nivel_e_disciplina()
                         return
@@ -258,9 +266,9 @@ def selecionar_disciplina():
                 for i, ret in enumerate(retangulos_disciplinas):
                     if ret.collidepoint(evento.pos):
                         if i == 0:
-                            estado["disciplinas_selecionadas"] = list(perguntas_por_nivel_e_disciplina[estado["nivel_selecionado"]].keys())
+                            estado.disciplinas_selecionadas = list(perguntas_por_nivel_e_disciplina[estado.nivel_selecionado].keys())
                         else:
-                            estado["disciplinas_selecionadas"] = [disciplinas[i]]
+                            estado.disciplinas_selecionadas = [disciplinas[i]]
                         return
         for i, ret in enumerate(retangulos_disciplinas):
             if ret.collidepoint(mouse_pos):
@@ -284,27 +292,27 @@ def selecionar_disciplina():
 async def batalha():
     global estado
     # Reiniciar variáveis de estado
-    estado["saude_jogador"] = 100
-    estado["saude_inimigo"] = 100
-    estado["mana_jogador"] = 100
-    estado["mana_inimigo"] = 100
-    estado["pontos_sabedoria"] = 0
-    estado["defendendo"] = False
-    estado["batalha_ativa"] = True
+    estado.saude_jogador = 100
+    estado.saude_inimigo = 100
+    estado.mana_jogador = 100
+    estado.mana_inimigo = 100
+    estado.pontos_sabedoria = 0
+    estado.defendendo = False
+    estado.batalha_ativa = True
 
     tocar_musica(MUSICAS["batalha"])
 
     perguntas = []
-    for disciplina in estado["disciplinas_selecionadas"]:
-        perguntas.extend(perguntas_por_nivel_e_disciplina[estado["nivel_selecionado"]][disciplina])
+    for disciplina in estado.disciplinas_selecionadas:
+        perguntas.extend(perguntas_por_nivel_e_disciplina[estado.nivel_selecionado][disciplina])
 
     screen.blit(background_batalha_img, (0, 0))
-    desenhar_texto(f"Nível: {estado['nivel_selecionado']}", font, COLORS["BRANCO"], screen, 20, 20)
-    desenhar_texto(f"Disciplinas: {', '.join(estado['disciplinas_selecionadas'])}", font, COLORS["BRANCO"], screen, 20, 60)
+    desenhar_texto(f"Nível: {estado.nivel_selecionado}", font, COLORS["BRANCO"], screen, 20, 20)
+    desenhar_texto(f"Disciplinas: {', '.join(estado.disciplinas_selecionadas)}", font, COLORS["BRANCO"], screen, 20, 60)
     pygame.display.flip()
     await asyncio.sleep(2)
 
-    while estado["batalha_ativa"]:
+    while estado.batalha_ativa:
         acao = await selecionar_acao()
         if acao == "Fugir":
             executar_acao(acao, False, 0)
@@ -315,7 +323,7 @@ async def batalha():
         executar_acao(acao, resposta_correta, tempo_resposta)
         resultado = checar_fim_batalha()
         if resultado:
-            estado["batalha_ativa"] = False
+            estado.batalha_ativa = False
             parar_musica()
             tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
             screen.blit(background_batalha_img, (0, 0))
@@ -329,7 +337,7 @@ async def batalha():
             turno_inimigo()
             resultado = checar_fim_batalha()
             if resultado:
-                estado["batalha_ativa"] = False
+                estado.batalha_ativa = False
                 parar_musica()
                 tocar_som(MUSICAS["vitoria"] if resultado == "Vitória" else MUSICAS["derrota"])
                 screen.blit(background_batalha_img, (0, 0))
@@ -474,7 +482,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
     cura = 0
 
     if acao == "Fugir":
-        estado["batalha_ativa"] = False
+        estado.batalha_ativa = False
         mensagem = "Você fugiu da batalha!"
     else:
         if resposta_correta:
@@ -483,10 +491,10 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                     dano = 20
                 else:
                     dano = 10
-                estado["jogador_acao"] = "attack"
+                estado.jogador_acao = "attack"
             elif acao == "Magia":
-                if estado["mana_jogador"] >= 10:
-                    estado["mana_jogador"] -= 10
+                if estado.mana_jogador >= 10:
+                    estado.mana_jogador -= 10
                     if tempo_resposta <= 5:
                         dano = 25
                     else:
@@ -494,23 +502,23 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                 else:
                     mensagem = "Mana insuficiente!"
             elif acao == "Defesa":
-                estado["defendendo"] = True
+                estado.defendendo = True
                 mensagem = "Você se preparou para a defesa!"
             elif acao == "Curar":
-                if estado["mana_jogador"] >= 15:
-                    estado["mana_jogador"] -= 15
+                if estado.mana_jogador >= 15:
+                    estado.mana_jogador -= 15
                     if tempo_resposta <= 5:
                         cura = 20
                     else:
                         cura = 10
-                    estado["saude_jogador"] = min(estado["saude_jogador"] + cura, 100)
+                    estado.saude_jogador = min(estado.saude_jogador + cura, 100)
                     mensagem = f"Você se curou em {cura} pontos!"
                 else:
                     mensagem = "Mana insuficiente!"
-            estado["pontos_sabedoria"] += 10
+            estado.pontos_sabedoria += 10
         else:
             if acao == "Defesa":
-                estado["defendendo"] = False
+                estado.defendendo = False
                 mensagem = "A defesa falhou!"
             else:
                 mensagem = "Resposta errada! Nenhum dano causado!"
@@ -529,7 +537,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                 pygame.display.flip()
                 pygame.time.delay(150)
 
-        estado["saude_inimigo"] -= dano
+        estado.saude_inimigo -= dano
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
         dano_inimigo = True if dano > 0 else False
 
@@ -549,22 +557,22 @@ def turno_inimigo():
     dano_jogador = False
     mensagem = ""
 
-    if tipo_acao == "Magia" and estado["mana_inimigo"] >= 10:
-        estado["mana_inimigo"] -= 10
+    if tipo_acao == "Magia" and estado.mana_inimigo >= 10:
+        estado.mana_inimigo -= 10
         dano += 5
     elif tipo_acao == "Defesa":
-        estado["defendendo"] = True
+        estado.defendendo = True
         mensagem = "O inimigo se preparou para a defesa!"
         dano = 0
     else:
-        if estado["defendendo"]:
+        if estado.defendendo:
             dano //= 2
-            estado["defendendo"] = False
+            estado.defendendo = False
             mensagem = "Defesa bem-sucedida! Dano reduzido!"
         else:
             mensagem = ""
 
-    estado["saude_jogador"] -= dano
+    estado.saude_jogador -= dano
     dano_jogador = True if dano > 0 else False
 
     screen.blit(background_batalha_img, (0, 0))
@@ -577,9 +585,9 @@ def turno_inimigo():
 
 # Função para checar fim da batalha
 def checar_fim_batalha():
-    if estado["saude_jogador"] <= 0:
+    if estado.saude_jogador <= 0:
         return "Derrota"
-    elif estado["saude_inimigo"] <= 0:
+    elif estado.saude_inimigo <= 0:
         return "Vitória"
     return None
 
@@ -675,11 +683,9 @@ async def fase_zero():
     jogador_no_chao = True
     altura_chao = HEIGHT - 400
 
-    estado.update({
-        "jogador_acao": "idle",
-        "jogador_frame_atual": 0,
-        "jogador_frame_tempo": 0
-    })
+    estado.jogador_acao = "idle"
+    estado.jogador_frame_atual = 0
+    estado.jogador_frame_tempo = 0
 
     ret_sair = desenhar_texto("Sair", font, COLORS["BRANCO"], screen, WIDTH - 100, HEIGHT - 50)
 
@@ -699,9 +705,9 @@ async def fase_zero():
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
-            estado["jogador_acao"] = "run"
+            estado.jogador_acao = "run"
         else:
-            estado["jogador_acao"] = "idle"
+            estado.jogador_acao = "idle"
 
         if keys[pygame.K_LEFT]:
             jogador_pos[0] -= 5
@@ -719,14 +725,14 @@ async def fase_zero():
             jogador_no_chao = True
 
         # Atualizar a animação do jogador
-        estado["jogador_frame_tempo"] += 1
-        if estado["jogador_frame_tempo"] >= 10:  # Ajuste o valor conforme necessário
-            estado["jogador_frame_tempo"] = 0
-            estado["jogador_frame_atual"] = (estado["jogador_frame_atual"] + 1) % len(jogador_animacoes[estado["jogador_acao"]])
+        estado.jogador_frame_tempo += 1
+        if estado.jogador_frame_tempo >= 10:  # Ajuste o valor conforme necessário
+            estado.jogador_frame_tempo = 0
+            estado.jogador_frame_atual = (estado.jogador_frame_atual + 1) % len(jogador_animacoes[estado.jogador_acao])
 
         screen.blit(background_historia_img, (0, 0))
-        if estado["jogador_frame_atual"] < len(jogador_animacoes[estado["jogador_acao"]]):
-            screen.blit(jogador_animacoes[estado["jogador_acao"]][estado["jogador_frame_atual"]], jogador_pos)
+        if estado.jogador_frame_atual < len(jogador_animacoes[estado.jogador_acao]):
+            screen.blit(jogador_animacoes[estado.jogador_acao][estado.jogador_frame_atual], jogador_pos)
         
         mouse_pos = pygame.mouse.get_pos()
         cor = COLORS["PRETO"] if ret_sair.collidepoint(mouse_pos) else COLORS["BRANCO"]
