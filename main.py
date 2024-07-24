@@ -107,8 +107,8 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado):
         estado.jogador_frame_atual = (estado.jogador_frame_atual + 1) % len(frames)
 
     # Animação do inimigo
-    frames = inimigo_animacoes["idle"]
-    frame_delay = 300
+    frames = inimigo_animacoes[estado.inimigo_acao]
+    frame_delay = 100
 
     screen.blit(frames[estado.inimigo_frame_atual], inimigo_pos)
     estado.inimigo_frame_tempo += 1
@@ -126,6 +126,9 @@ def carregar_animacao(caminho, largura_frame, altura_frame, num_frames):
     except pygame.error as e:
         print(f"Erro ao carregar animação: {caminho}\n{e}")
         return [pygame.Surface((largura_frame, altura_frame)) for _ in range(num_frames)]
+    
+    largura_sheet, altura_sheet = sprite_sheet.get_size()
+    largura_frame = largura_sheet // num_frames  # Atualiza a largura do frame de acordo com o número de quadros
     
     frames = []
     for i in range(num_frames):
@@ -149,6 +152,7 @@ class EstadoJogo:
         self.jogador_frame_tempo = 0
         self.inimigo_frame_atual = 0
         self.inimigo_frame_tempo = 0
+        self.inimigo_acao = "Deceased_idle"
 
 estado = EstadoJogo()
 
@@ -162,7 +166,11 @@ jogador_animacoes = {
 
 inimigo_animacoes = {
     "idle": carregar_animacao("Idle-Sheet-inimigo.png", 64, 64, 4),
-    "derrota": carregar_animacao("derrota_inimigo-Sheet.png", 64, 64, 8)
+    "Deceased_idle": carregar_animacao("Deceased_idle-Sheet.png", 48, 48, 4),
+    "Deceased_walk": carregar_animacao("Deceased_walk-Sheet.png", 48, 48, 4),
+    "Deceased_hurt": carregar_animacao("Deceased_hurt-Sheet.png", 48, 48, 4),
+    "Deceased_death": carregar_animacao("Deceased_death-Sheet.png", 48, 48, 4),
+    "Deceased_attack": carregar_animacao("Deceased_attack-Sheet.png", 48, 48, 4)
 }
 
 # Função para selecionar nível e disciplina
@@ -299,6 +307,7 @@ async def batalha():
     estado.pontos_sabedoria = 0
     estado.defendendo = False
     estado.batalha_ativa = True
+    estado.inimigo_acao = "Deceased_idle"
 
     tocar_musica(MUSICAS["batalha"])
 
@@ -492,6 +501,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                 else:
                     dano = 10
                 estado.jogador_acao = "attack"
+                flash_effect(screen, COLORS["VERMELHO"], 100)
             elif acao == "Magia":
                 if estado.mana_jogador >= 10:
                     estado.mana_jogador -= 10
@@ -499,6 +509,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                         dano = 25
                     else:
                         dano = 15
+                    flash_effect(screen, COLORS["AZUL"], 100)
                 else:
                     mensagem = "Mana insuficiente!"
             elif acao == "Defesa":
@@ -538,6 +549,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                 pygame.time.delay(150)
 
         estado.saude_inimigo -= dano
+        estado.inimigo_acao = "Deceased_hurt" if dano > 0 else "Deceased_idle"
         mensagem = f"Você causou {dano} de dano!" if dano > 0 else mensagem
         dano_inimigo = True if dano > 0 else False
 
@@ -573,6 +585,7 @@ def turno_inimigo():
             mensagem = ""
 
     estado.saude_jogador -= dano
+    estado.inimigo_acao = "Deceased_attack" if dano > 0 else "Deceased_idle"
     dano_jogador = True if dano > 0 else False
 
     screen.blit(background_batalha_img, (0, 0))
@@ -583,11 +596,17 @@ def turno_inimigo():
     pygame.display.flip()
     pygame.time.delay(2000)
 
+    if estado.saude_jogador <= 0:
+        estado.inimigo_acao = "Deceased_death"
+        estado.batalha_ativa = False
+
 # Função para checar fim da batalha
 def checar_fim_batalha():
     if estado.saude_jogador <= 0:
+        estado.inimigo_acao = "Deceased_death"
         return "Derrota"
     elif estado.saude_inimigo <= 0:
+        estado.inimigo_acao = "Deceased_death"
         return "Vitória"
     return None
 
@@ -672,6 +691,7 @@ def definir_modo_jogo(tela_cheia):
 async def modo_historia():
     tocar_musica(MUSICAS["historia"])
     await fase_zero()
+    await fase_um()
 
 # Função para a fase zero do modo história
 async def fase_zero():
@@ -743,6 +763,86 @@ async def fase_zero():
         pygame.display.flip()
         clock.tick(60)
         await asyncio.sleep(0)
+
+# Função para a fase um do modo história
+async def fase_um():
+    global estado
+    running = True
+    clock = pygame.time.Clock()
+    jogador_pos = [100, HEIGHT - 120]
+    jogador_vel_y = 0
+    jogador_no_chao = True
+    altura_chao = HEIGHT - 400
+
+    estado.jogador_acao = "idle"
+    estado.jogador_frame_atual = 0
+    estado.jogador_frame_tempo = 0
+
+    ret_sair = desenhar_texto("Sair", font, COLORS["BRANCO"], screen, WIDTH - 100, HEIGHT - 50)
+
+    while running:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    running = False
+                    await tela_inicial()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if ret_sair.collidepoint(pygame.mouse.get_pos()):
+                    running = False
+                    await tela_inicial()
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            estado.jogador_acao = "run"
+        else:
+            estado.jogador_acao = "idle"
+
+        if keys[pygame.K_LEFT]:
+            jogador_pos[0] -= 5
+        if keys[pygame.K_RIGHT]:
+            jogador_pos[0] += 5
+        if keys[pygame.K_SPACE] and jogador_no_chao:
+            jogador_vel_y = -15
+            jogador_no_chao = False
+
+        jogador_vel_y += 1
+        jogador_pos[1] += jogador_vel_y
+        if jogador_pos[1] >= altura_chao:
+            jogador_pos[1] = altura_chao
+            jogador_vel_y = 0
+            jogador_no_chao = True
+
+        # Atualizar a animação do jogador
+        estado.jogador_frame_tempo += 1
+        if estado.jogador_frame_tempo >= 10:  # Ajuste o valor conforme necessário
+            estado.jogador_frame_tempo = 0
+            estado.jogador_frame_atual = (estado.jogador_frame_atual + 1) % len(jogador_animacoes[estado.jogador_acao])
+
+        screen.blit(background_historia_img, (0, 0))
+        if estado.jogador_frame_atual < len(jogador_animacoes[estado.jogador_acao]):
+            screen.blit(jogador_animacoes[estado.jogador_acao][estado.jogador_frame_atual], jogador_pos)
+        
+        mouse_pos = pygame.mouse.get_pos()
+        cor = COLORS["PRETO"] if ret_sair.collidepoint(mouse_pos) else COLORS["BRANCO"]
+        if ret_sair.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, COLORS["AMARELO"], ret_sair)
+        ret_sair = desenhar_texto("Sair", font, cor, screen, WIDTH - 100, HEIGHT - 50)
+        
+        pygame.display.flip()
+        clock.tick(60)
+        await asyncio.sleep(0)
+
+# Função para efeito de flash na tela
+def flash_effect(screen, color, duration):
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(128)
+    overlay.fill(color)
+    screen.blit(overlay, (0, 0))
+    pygame.display.flip()
+    pygame.time.delay(duration)
 
 # Inicializar o jogo
 async def main():
