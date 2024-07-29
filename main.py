@@ -105,6 +105,8 @@ def desenhar_personagens(screen, jogador_animacoes, inimigo_animacoes, estado):
     if estado.jogador_frame_tempo >= frame_delay:
         estado.jogador_frame_tempo = 0
         estado.jogador_frame_atual = (estado.jogador_frame_atual + 1) % len(frames)
+        if estado.jogador_acao == "attack" and estado.jogador_frame_atual == 0:
+            estado.jogador_acao = "idle"  # Voltar para o estado idle após o ataque
 
     # Animação do inimigo
     frames = inimigo_animacoes[estado.inimigo_acao]
@@ -547,6 +549,7 @@ def executar_acao(acao, resposta_correta, tempo_resposta):
                 screen.blit(frame, (100, 300))
                 pygame.display.flip()
                 pygame.time.delay(150)
+            estado.jogador_acao = "idle"  # Voltar para o estado idle após o ataque
 
         estado.saude_inimigo -= dano
         estado.inimigo_acao = "Deceased_hurt" if dano > 0 else "Deceased_idle"
